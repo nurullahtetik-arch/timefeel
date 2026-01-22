@@ -3,12 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeFeel v0.8</title>
+  <title>TimeFeel v0.9</title>
 
   <style>
     :root { color-scheme: dark; }
-
-    /* iOS Safari: long-press kopyala/callout + seçim kapat */
     * { -webkit-tap-highlight-color: transparent; }
     html, body {
       height:100%;
@@ -40,80 +38,34 @@
       mix-blend-mode: overlay;
     }
 
-    .wrap {
-      position:relative;
-      min-height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-    }
+    .wrap { position:relative; min-height:100%; display:flex; align-items:center; justify-content:center; padding:18px; }
 
-    /* --- Card --- */
     .card{
-      width:min(860px, 96vw);
+      width:min(900px, 96vw);
       border-radius:22px;
       border:1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.04);
-      box-shadow:
-        0 22px 70px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(255,255,255,0.03) inset;
+      box-shadow: 0 22px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       padding:16px;
     }
 
-    .top {
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
-    .brandRow {
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .top { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .brandRow { display:flex; align-items:center; gap:10px; }
     .logo {
-      width:34px; height:34px;
-      border-radius:12px;
+      width:34px; height:34px; border-radius:12px;
       border:1px solid rgba(255,255,255,0.10);
       background: radial-gradient(18px 18px at 30% 30%, rgba(78,163,255,0.35), rgba(255,255,255,0.02));
       box-shadow: 0 10px 30px rgba(0,0,0,0.35);
       display:flex; align-items:center; justify-content:center;
     }
     .logo svg { opacity:.9; }
+    .brand { font-size:12px; opacity:.65; letter-spacing:.18em; text-transform:uppercase; }
+    .headline { margin-top:6px; font-size:16px; font-weight:950; letter-spacing:0.01em; line-height:1.2; }
+    .sub { margin-top:6px; font-size:12px; opacity:.65; line-height:1.35; }
 
-    .brand {
-      font-size:12px;
-      opacity:.65;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-    }
-    .headline {
-      margin-top:6px;
-      font-size:16px;
-      font-weight:950;
-      letter-spacing:0.01em;
-      line-height:1.2;
-    }
-    .sub {
-      margin-top:6px;
-      font-size:12px;
-      opacity:.65;
-      line-height:1.35;
-    }
-
-    .controls {
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      align-items:flex-end;
-      min-width: 280px;
-    }
-
+    .controls { display:flex; flex-direction:column; gap:10px; align-items:flex-end; min-width: 300px; }
     .chipRow { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
 
     .chip{
@@ -127,9 +79,7 @@
       font-size:12px;
       cursor:pointer;
       transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-      -webkit-touch-callout:none;
-      -webkit-user-select:none;
-      user-select:none;
+      -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
     }
     .chip:hover { transform: translateY(-1px); }
     .chip:active { transform: translateY(0px) scale(0.99); }
@@ -147,7 +97,6 @@
       align-items:center;
       justify-content:space-between;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -161,13 +110,10 @@
       opacity:.94;
     }
     .pill b { font-weight:950; }
-    .dot {
-      width:6px; height:6px; border-radius:999px;
-      background: rgba(255,255,255,0.35);
-    }
+    .dot { width:6px; height:6px; border-radius:999px; background: rgba(255,255,255,0.35); }
     .dot.green { background: rgba(120,255,190,0.75); }
-    .dot.blue { background: rgba(78,163,255,0.75); }
-    .dot.red { background: rgba(255,120,140,0.80); }
+    .dot.blue  { background: rgba(78,163,255,0.75); }
+    .dot.red   { background: rgba(255,120,140,0.80); }
 
     /* --- Arena --- */
     .arena{
@@ -178,49 +124,28 @@
       background:
         radial-gradient(900px 380px at 50% 0%, rgba(78,163,255,0.14), rgba(255,255,255,0.01)),
         radial-gradient(700px 420px at 50% 120%, rgba(120,255,190,0.08), transparent 65%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      overflow:hidden;
-      touch-action:none;
-      -webkit-touch-callout:none;
-      -webkit-user-select:none;
-      user-select:none;
-    }
-
-    .orbWrap {
-      position:relative;
-      width:170px; height:170px;
       display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+      touch-action:none;
+      -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
     }
-
+    .orbWrap { position:relative; width:170px; height:170px; display:flex; align-items:center; justify-content:center; }
     .ring {
       position:absolute; inset:-10px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,0.08);
       background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 60%);
-      filter: blur(0px);
     }
-
     .orb{
-      width:160px; height:160px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:950;
-      letter-spacing:0.12em;
+      width:160px; height:160px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950; letter-spacing:0.12em;
       border:1px solid rgba(78,163,255,0.45);
       background:
         radial-gradient(circle at 30% 30%, rgba(78,163,255,0.35), rgba(78,163,255,0.10) 40%, rgba(255,255,255,0.02));
-      box-shadow:
-        0 25px 70px rgba(0,0,0,0.55),
-        0 0 0 1px rgba(255,255,255,0.04) inset;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
       transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease;
-      -webkit-touch-callout:none;
-      -webkit-user-select:none;
-      user-select:none;
+      -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
     }
     .orb.holding{
       transform: scale(1.06);
@@ -230,13 +155,7 @@
         0 30px 90px rgba(0,0,0,0.62),
         0 0 0 22px rgba(78,163,255,0.09);
     }
-
-    .hint {
-      position:absolute;
-      bottom:14px;
-      font-size:12px;
-      opacity:.65;
-    }
+    .hint { position:absolute; bottom:14px; font-size:12px; opacity:.65; }
 
     .toast{
       position:absolute; inset:0;
@@ -252,14 +171,9 @@
     .bad{ color: rgba(255,120,140,0.95); }
 
     /* --- Bottom --- */
-    .bottom{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap:12px;
-    }
+    .bottom{ margin-top:14px; display:grid; grid-template-columns: 1.1fr 0.9fr; gap:12px; }
     @media (max-width: 780px){
-      .controls{ align-items:flex-start; min-width: auto; }
+      .controls{ align-items:flex-start; min-width:auto; }
       .chipRow{ justify-content:flex-start; }
       .bottom{ grid-template-columns: 1fr; }
       .arena{ height:320px; }
@@ -279,19 +193,8 @@
       letter-spacing:.12em;
       text-transform:uppercase;
     }
-    .row {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .metric {
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      min-width: 130px;
-    }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .metric { display:flex; flex-direction:column; gap:4px; min-width: 130px; }
     .metric .k { font-size:11px; opacity:.6; letter-spacing:.06em; text-transform:uppercase; }
     .metric .v { font-size:18px; font-weight:950; }
 
@@ -306,9 +209,7 @@
       color: rgba(255,255,255,0.92);
       cursor:pointer;
       transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-      -webkit-touch-callout:none;
-      -webkit-user-select:none;
-      user-select:none;
+      -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
     }
     .btn:hover { transform: translateY(-1px); }
     .btn:active { transform: translateY(0px) scale(0.99); }
@@ -326,16 +227,9 @@
     }
     .lbItem:last-child{ border-bottom:none; }
 
-    .mini {
-      font-size:12px; opacity:.65; line-height:1.35;
-    }
-
+    .mini { font-size:12px; opacity:.65; line-height:1.35; }
     .confetti{
-      position:absolute;
-      width:8px; height:10px;
-      border-radius:2px;
-      opacity:0.95;
-      pointer-events:none;
+      position:absolute; width:8px; height:10px; border-radius:2px; opacity:0.95; pointer-events:none;
       transform: translateY(-20px);
       animation: fall 720ms ease-out forwards;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
@@ -344,7 +238,6 @@
 
     input[type="range"]{ width:100%; }
 
-    /* Small footer line */
     .footer {
       margin-top:10px;
       display:flex;
@@ -391,11 +284,13 @@
           <div class="chipRow">
             <button class="chip" id="tabDaily" type="button">Daily</button>
             <button class="chip" id="tabPractice" type="button">Practice</button>
+            <button class="chip" id="shareBtn" type="button">Share</button>
           </div>
           <div class="chipRow">
             <button class="chip" id="diffEasy" type="button">Kolay</button>
             <button class="chip" id="diffMed" type="button">Orta</button>
             <button class="chip" id="diffHard" type="button">Zor</button>
+            <button class="chip" id="soundBtn" type="button">Ses: Açık</button>
           </div>
         </div>
       </div>
@@ -469,7 +364,7 @@
 
       <div class="footer">
         <div>Daily: 5 hak • Practice: sınırsız • Reklam opsiyonel</div>
-        <div>v0.8</div>
+        <div>v0.9</div>
       </div>
     </div>
   </div>
@@ -481,7 +376,7 @@
   document.addEventListener("selectstart", (e) => e.preventDefault(), { passive: false });
   document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 
-  // ---------- Date key ----------
+  // ---------- Helpers ----------
   function todayKey(){
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -489,8 +384,6 @@
     const dd = String(d.getDate()).padStart(2,'0');
     return `${yyyy}-${mm}-${dd}`;
   }
-
-  // ---------- Deterministic RNG ----------
   function seededFloat01(seedStr){
     let h = 2166136261;
     for (let i=0;i<seedStr.length;i++){
@@ -502,12 +395,16 @@
   function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
   function round2(x){ return Math.round(x*100)/100; }
   function fmt2(x){ return x.toFixed(2); }
+  function signedMs(x){
+    const n = Math.round(x);
+    return (n >= 0 ? "+" : "") + n + "ms";
+  }
 
-  // ---------- Daily goals (deterministic 3-set) ----------
+  // ---------- Daily goals ----------
   function dailyGoals(){
-    const base  = seededFloat01("timefeel:v08:"  + todayKey());
-    const base2 = seededFloat01("timefeel:v08b:" + todayKey());
-    const base3 = seededFloat01("timefeel:v08c:" + todayKey());
+    const base  = seededFloat01("timefeel:v09:"  + todayKey());
+    const base2 = seededFloat01("timefeel:v09b:" + todayKey());
+    const base3 = seededFloat01("timefeel:v09c:" + todayKey());
 
     const easyRaw = 1.00 + 0.60 * base;  // 1.00–1.60
     const medRaw  = 1.30 + 0.70 * base2; // 1.30–2.00
@@ -534,7 +431,7 @@
   };
 
   // ---------- Storage ----------
-  const LS = "timefeel_v08:";
+  const LS = "timefeel_v09:";
   const load = (k, fb) => { try{ const v = localStorage.getItem(LS+k); return v ? JSON.parse(v) : fb; }catch{ return fb; } };
   const save = (k, v) => { try{ localStorage.setItem(LS+k, JSON.stringify(v)); }catch{} };
 
@@ -555,17 +452,61 @@
   let holding = false;
   let startMs = 0;
 
-  // best per day & diff (daily only)
   const bestKey = (d) => `best:${todayKey()}:${d}`;
-
-  // history per diff
   let history = load("history", []);
+
+  // ---------- Sound ----------
+  let soundOn = load("sound_on", true);
+  let audioCtx = null;
+
+  function ensureAudio(){
+    if (!soundOn) return null;
+    if (!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch{ audioCtx = null; }
+    }
+    if (audioCtx && audioCtx.state === "suspended"){
+      audioCtx.resume().catch(()=>{});
+    }
+    return audioCtx;
+  }
+
+  function tone(freq, dur, type="sine", gain=0.06){
+    const ctx = ensureAudio();
+    if (!ctx) return;
+
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+    osc.connect(g);
+    g.connect(ctx.destination);
+
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
+
+  function sPress(){ tone(180, 0.07, "sine", 0.05); }
+  function sNice(){ tone(520, 0.08, "triangle", 0.06); tone(760, 0.09, "triangle", 0.035); }
+  function sPerfect(){ tone(620, 0.08, "triangle", 0.06); setTimeout(()=>tone(880, 0.10, "triangle", 0.05), 60); }
+  function sFail(){ tone(140, 0.10, "sawtooth", 0.045); setTimeout(()=>tone(110, 0.10, "sawtooth", 0.035), 70); }
+  function sSwitch(){ tone(320, 0.05, "sine", 0.04); }
 
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
 
   const tabDaily = $("tabDaily");
   const tabPractice = $("tabPractice");
+  const shareBtn = $("shareBtn");
+  const soundBtn = $("soundBtn");
+
   const diffEasy = $("diffEasy");
   const diffMed  = $("diffMed");
   const diffHard = $("diffHard");
@@ -600,7 +541,6 @@
   const lbPanel = $("lbPanel");
   const lb = $("lb");
 
-  // extra: prevent long-press menu specifically on arena/orb
   [arena, orb].forEach(el => {
     el.addEventListener("contextmenu", e => e.preventDefault(), { passive:false });
     el.addEventListener("selectstart", e => e.preventDefault(), { passive:false });
@@ -616,10 +556,6 @@
     orb.classList.toggle("holding", on);
     orb.textContent = on ? "…" : "HOLD";
   }
-  function signedMs(x){
-    const n = Math.round(x);
-    return (n >= 0 ? "+" : "") + n + "ms";
-  }
   function confettiBurst(count=14){
     const rect = arena.getBoundingClientRect();
     for (let i=0;i<count;i++){
@@ -633,19 +569,16 @@
       setTimeout(()=> el.remove(), 950);
     }
   }
-
-  function currentGoalSec(){
-    return mode === "daily" ? DAILY[diff] : practiceTarget;
-  }
-  function clampTol(){
-    tolMs = clamp(tolMs, TOL[diff].min, TOL[diff].max);
-  }
+  function currentGoalSec(){ return mode === "daily" ? DAILY[diff] : practiceTarget; }
+  function clampTol(){ tolMs = clamp(tolMs, TOL[diff].min, TOL[diff].max); }
   function setActiveChips(){
     tabDaily.classList.toggle("active", mode==="daily");
     tabPractice.classList.toggle("active", mode==="practice");
     diffEasy.classList.toggle("active", diff==="easy");
     diffMed.classList.toggle("active", diff==="med");
     diffHard.classList.toggle("active", diff==="hard");
+    soundBtn.classList.toggle("active", soundOn);
+    soundBtn.textContent = soundOn ? "Ses: Açık" : "Ses: Kapalı";
   }
 
   function upsertHistory(){
@@ -705,20 +638,18 @@
   function render(){
     setActiveChips();
 
-    // show/hide sections
-    pillLives.style.display = mode==="daily" ? "inline-flex" : "none";
-    pillBest.style.display  = mode==="daily" ? "inline-flex" : "none";
-    lbPanel.style.display   = mode==="daily" ? "block" : "none";
-    adBtn.style.display     = mode==="daily" ? "inline-flex" : "none";
-    practiceBox.style.display = mode==="practice" ? "block" : "none";
-
-    // header line
     const diffLabel = diff==="easy"?"Kolay":diff==="med"?"Orta":"Zor";
     if (mode === "daily"){
       goalLine.textContent = `Bugünün hedefi: ${fmt2(DAILY[diff])}s (${diffLabel})`;
     } else {
       goalLine.textContent = `Practice hedefi: ${fmt2(practiceTarget)}s (${diffLabel})`;
     }
+
+    pillLives.style.display = mode==="daily" ? "inline-flex" : "none";
+    pillBest.style.display  = mode==="daily" ? "inline-flex" : "none";
+    lbPanel.style.display   = mode==="daily" ? "block" : "none";
+    adBtn.style.display     = mode==="daily" ? "inline-flex" : "none";
+    practiceBox.style.display = mode==="practice" ? "block" : "none";
 
     livesEl.textContent = String(lives);
     tolEl.textContent = String(Math.round(tolMs));
@@ -750,6 +681,7 @@
     if (newMode !== "daily" && newMode !== "practice") return;
     mode = newMode;
     save("mode", mode);
+    sSwitch();
     hardReset(false);
   }
 
@@ -757,6 +689,7 @@
     if (!TOL[newDiff]) return;
     diff = newDiff;
     save("diff", diff);
+    sSwitch();
     hardReset(false);
   }
 
@@ -767,13 +700,15 @@
     render();
   }
 
-  // ---------- Input ----------
+  // ---------- Gameplay ----------
   function onPress(){
+    ensureAudio(); // unlock on first interaction
     if (holding) return;
 
     if (mode==="daily" && lives<=0){
       msg.textContent = "Hakkın bitti. İstersen +2 hak için reklam.";
       showToast("NO LIVES", false);
+      sFail();
       return;
     }
 
@@ -781,6 +716,7 @@
     startMs = performance.now();
     setHolding(true);
     msg.textContent = "Tutuyorsun…";
+    sPress();
   }
 
   function onRelease(){
@@ -796,7 +732,6 @@
     const diffMs = elapsedMs - goalMs;
     const abs = Math.abs(diffMs);
 
-    // update last attempt UI
     lastYou.textContent = `${elapsedSec.toFixed(2)}s`;
     lastGoal.textContent = `${fmt2(goalSec)}s`;
     lastDiff.textContent = signedMs(diffMs);
@@ -811,8 +746,8 @@
       lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
       showToast(lastVerdict.textContent, true);
       msg.textContent = "Başarılı!";
-
-      if (perfect) confettiBurst(14);
+      if (perfect){ confettiBurst(14); sPerfect(); }
+      else { sNice(); }
 
       if (mode==="daily"){
         const k = bestKey(diff);
@@ -825,6 +760,7 @@
 
       lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
       showToast(lastVerdict.textContent, false);
+      sFail();
 
       if (mode==="daily"){
         lives = Math.max(0, lives - 1);
@@ -838,7 +774,194 @@
     render();
   }
 
+  // ---------- Share Card ----------
+  function makeShareText(){
+    const diffLabel = diff==="easy"?"Kolay":diff==="med"?"Orta":"Zor";
+    if (mode === "daily"){
+      const best = load(bestKey(diff), 0);
+      return `TimeFeel • Daily\nHedef: ${fmt2(DAILY[diff])}s (${diffLabel})\nEn iyi streak: ${best}\n${location.href}`;
+    } else {
+      return `TimeFeel • Practice\nHedef: ${fmt2(practiceTarget)}s (${diffLabel})\n${location.href}`;
+    }
+  }
+
+  function drawShareCard(){
+    const w = 1080, h = 1350;
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d");
+
+    // Background gradient
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, "#070912");
+    g.addColorStop(0.6, "#06070e");
+    g.addColorStop(1, "#05060b");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    // Soft blobs
+    function blob(x,y,r, color){
+      const rg = ctx.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0, color);
+      rg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = rg;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    blob(260,240,420,"rgba(120,120,255,0.20)");
+    blob(840,220,460,"rgba(78,163,255,0.20)");
+    blob(760,1040,520,"rgba(120,255,190,0.14)");
+
+    // Card
+    const pad = 70;
+    const rx = 38;
+    const cx = pad, cy = 140, cw = w - pad*2, ch = h - 240;
+    roundRect(ctx, cx, cy, cw, ch, rx);
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.10)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Title
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.font = "700 28px ui-sans-serif, system-ui";
+    ctx.fillText("TIMEFEEL", cx+46, cy+70);
+
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.font = "900 56px ui-sans-serif, system-ui";
+    ctx.fillText(mode === "daily" ? "DAILY" : "PRACTICE", cx+46, cy+140);
+
+    const diffLabel = diff==="easy"?"Kolay":diff==="med"?"Orta":"Zor";
+    const goalSec = mode==="daily" ? DAILY[diff] : practiceTarget;
+    const best = load(bestKey(diff), 0);
+
+    // Main numbers
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "900 64px ui-sans-serif, system-ui";
+    ctx.fillText(`Hedef: ${fmt2(goalSec)}s`, cx+46, cy+250);
+
+    ctx.fillStyle = "rgba(255,255,255,0.70)";
+    ctx.font = "700 30px ui-sans-serif, system-ui";
+    ctx.fillText(`Zorluk: ${diffLabel}`, cx+46, cy+305);
+
+    ctx.fillStyle = "rgba(255,255,255,0.90)";
+    ctx.font = "900 52px ui-sans-serif, system-ui";
+    if (mode === "daily"){
+      ctx.fillText(`En iyi streak: ${best}`, cx+46, cy+400);
+    } else {
+      ctx.fillText(`Streak: ${streak}`, cx+46, cy+400);
+    }
+
+    // Orb illustration
+    const ox = cx + cw - 230;
+    const oy = cy + 300;
+    const or = 130;
+    const og = ctx.createRadialGradient(ox-or/3, oy-or/3, 10, ox, oy, or);
+    og.addColorStop(0, "rgba(78,163,255,0.55)");
+    og.addColorStop(0.6, "rgba(78,163,255,0.18)");
+    og.addColorStop(1, "rgba(255,255,255,0.03)");
+    ctx.beginPath(); ctx.arc(ox, oy, or, 0, Math.PI*2); ctx.fillStyle = og; ctx.fill();
+    ctx.strokeStyle = "rgba(78,163,255,0.45)"; ctx.lineWidth = 3; ctx.stroke();
+
+    // Footer
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = "700 26px ui-sans-serif, system-ui";
+    ctx.fillText(`Tarih: ${todayKey()}`, cx+46, cy+ch-90);
+
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "700 22px ui-sans-serif, system-ui";
+    ctx.fillText(`Oyna: ${shortUrl(location.href)}`, cx+46, cy+ch-50);
+
+    return c;
+
+    function roundRect(ctx,x,y,w,h,r){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,  x+w,y+h, r);
+      ctx.arcTo(x+w,y+h,x,  y+h, r);
+      ctx.arcTo(x,  y+h,x,  y,   r);
+      ctx.arcTo(x,  y,  x+w,y,   r);
+      ctx.closePath();
+    }
+    function shortUrl(u){
+      try{
+        const url = new URL(u);
+        return url.host + url.pathname;
+      }catch{
+        return u;
+      }
+    }
+  }
+
+  async function shareScore(){
+    const text = makeShareText();
+    const canvas = drawShareCard();
+    const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+    const file = blob ? new File([blob], "timefeel.png", { type: "image/png" }) : null;
+
+    // Web Share API (mobil)
+    try{
+      if (navigator.share && file && navigator.canShare && navigator.canShare({ files: [file] })){
+        await navigator.share({ title: "TimeFeel", text, files: [file] });
+        msg.textContent = "Paylaşıldı.";
+        return;
+      }
+      if (navigator.share){
+        await navigator.share({ title: "TimeFeel", text });
+        msg.textContent = "Paylaşıldı.";
+        return;
+      }
+    }catch{
+      // user cancelled or share failed — fallback to download
+    }
+
+    // Download fallback
+    if (blob){
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "timefeel.png";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+      msg.textContent = "Görsel indirildi (paylaşabilirsin).";
+    } else {
+      msg.textContent = "Paylaşım oluşturulamadı.";
+    }
+  }
+
   // ---------- Buttons ----------
+  function toggleSound(){
+    soundOn = !soundOn;
+    save("sound_on", soundOn);
+    if (soundOn) ensureAudio();
+    setActiveChips();
+    msg.textContent = soundOn ? "Ses açıldı." : "Ses kapandı.";
+    sSwitch();
+  }
+
+  function setMode(newMode){
+    if (newMode !== "daily" && newMode !== "practice") return;
+    mode = newMode;
+    save("mode", mode);
+    sSwitch();
+    hardReset(false);
+  }
+
+  function setDiff(newDiff){
+    if (!TOL[newDiff]) return;
+    diff = newDiff;
+    save("diff", diff);
+    sSwitch();
+    hardReset(false);
+  }
+
+  function setPracticeTarget(sec){
+    practiceTarget = clamp(sec, 1.00, 2.20);
+    save("practice_target", practiceTarget);
+    if (mode==="practice") msg.textContent = "Hedef güncellendi.";
+    render();
+  }
+
   tabDaily.addEventListener("click", ()=> setMode("daily"));
   tabPractice.addEventListener("click", ()=> setMode("practice"));
 
@@ -846,20 +969,24 @@
   diffMed.addEventListener("click", ()=> setDiff("med"));
   diffHard.addEventListener("click", ()=> setDiff("hard"));
 
-  resetBtn.addEventListener("click", ()=> hardReset(true));
+  soundBtn.addEventListener("click", ()=> toggleSound());
+  shareBtn.addEventListener("click", ()=> shareScore());
 
-  // "Rewarded ad" sim: +2 lives only when lives==0
+  resetBtn.addEventListener("click", ()=> { sSwitch(); hardReset(true); });
+
   adBtn.addEventListener("click", ()=>{
     if (mode!=="daily" || lives>0) return;
     lives = Math.min(LIVES_MAX, lives + 2);
     msg.textContent = "+2 hak aldın.";
     showToast("+2 LIFE", true);
+    sNice();
     render();
   });
 
   randBtn.addEventListener("click", ()=>{
     const r = 1.00 + (2.20 - 1.00) * Math.random();
     setPracticeTarget(round2(r));
+    sSwitch();
   });
   slider.addEventListener("input", (e)=> setPracticeTarget(parseFloat(e.target.value)));
 
@@ -871,8 +998,15 @@
   window.addEventListener("keyup", (e)=>{ if (e.code==="Space"){ e.preventDefault(); onRelease(); } });
 
   // ---------- Init ----------
-  render();
-  hardReset(false);
+  function init(){
+    // normalize lives if someone refreshes at 0 (daily)
+    if (mode === "daily" && typeof lives !== "number") lives = LIVES_MAX;
+    setActiveChips();
+    render();
+    hardReset(false);
+  }
+
+  init();
 })();
 </script>
 </body>
