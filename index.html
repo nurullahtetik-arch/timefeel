@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TimeFeel v0.6 • Daily + Practice</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { height:100%; margin:0; background:#0b0d12; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+    .wrap { height:100%; display:flex; align-items:center; justify-content:center; }
+    .card{
+      width:min(880px, 96vw);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+      padding:18px;
+      user-select:none;
+    }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .title{ font-size:14px; opacity:.7; letter-spacing:.14em; text-transform:uppercase; }
+    .big { font-size:28px; font-weight:900; letter-spacing:0.02em; }
+    .sub { font-size:13px; opacity:.65; line-height:1.35; }
+    .pill{
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      opacity:0.92;
+      white-space:nowrap;
+    }
+    .seg{ display:flex; gap:8px; flex-wrap:wrap; }
+    .seg button{
+      appearance:none;
+      border-radius:999px;
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.92);
+      font-size:12px;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .seg button.active{
+      border-color: rgba(78,163,255,0.35);
+      background: rgba(78,163,255,0.12);
+    }
+    .arena{
+      margin-top:14px;
+      height:300px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.08);
+      background: radial-gradient(1200px 500px at 50% 0%, rgba(78,163,255,0.10), rgba(255,255,255,0.01));
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+      touch-action:none;
+    }
+    .orb{
+      width:130px; height:130px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; letter-spacing:0.08em;
+      border:1px solid rgba(78,163,255,0.35);
+      background: rgba(78,163,255,0.10);
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+      box-shadow: 0 0 0 0 rgba(78,163,255,0.0);
+    }
+    .orb.holding{
+      transform: scale(1.06);
+      background: rgba(78,163,255,0.18);
+      box-shadow: 0 0 0 18px rgba(78,163,255,0.06);
+    }
+    .toast{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:42px; font-weight:950;
+      opacity:0; transform: translateY(8px);
+      transition: opacity 160ms ease, transform 160ms ease;
+      pointer-events:none;
+      text-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+    .toast.show{ opacity:1; transform:translateY(0); }
+    .good{ color: rgba(120,255,190,0.95); }
+    .bad{ color: rgba(255,120,140,0.95); }
+
+    .grid{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:12px;
+    }
+    @media (max-width: 760px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .panel{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      padding:12px;
+    }
+    .panel h3{
+      margin:0 0 8px 0;
+      font-size:12px;
+      opacity:.7;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      font-size:13px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.92);
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn.primary{ border-color: rgba(78,163,255,0.35); background: rgba(78,163,255,0.12); }
+    .btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+    .lbItem{
+      display:flex; justify-content:space-between; gap:10px;
+      font-size:13px; padding:6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .lbItem:last-child{ border-bottom:none; }
+    .muted{ opacity:.65; }
+
+    .confetti{
+      position:absolute;
+      width:8px; height:10px;
+      border-radius:2px;
+      opacity:0.95;
+      pointer-events:none;
+      transform: translateY(-20px);
+      animation: fall 700ms ease-out forwards;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.45));
+    }
+    @keyframes fall { to { transform: translateY(320px) rotate(220deg); opacity:0; } }
+
+    input[type="range"]{ width:100%; }
+    .miniRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <div class="title">TIMEFEEL v0.6</div>
+        <div class="row" style="gap:8px;">
+          <div class="pill">Mod: <b id="modeLbl">Daily</b></div>
+          <div class="pill" id="livesPill">❤️ Hak: <span id="lives">5</span></div>
+          <div class="pill">Tolerans: ±<span id="tol">80</span>ms</div>
+          <div class="pill">Streak: <span id="streak">0</span></div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <div class="title" style="opacity:.6; letter-spacing:.10em;">HEDEF</div>
+          <div class="big"><span id="goal">1.70</span><span style="opacity:.7; font-size:18px;">s</span></div>
+          <div class="sub">Basılı tut ve tam hedefte bırak. Sayaç yok. (Space ile de oynanır.)</div>
+        </div>
+
+        <div class="panel" style="min-width:340px;">
+          <h3>Mod</h3>
+          <div class="seg" style="margin-bottom:10px;">
+            <button id="btnDaily" type="button">Daily</button>
+            <button id="btnPractice" type="button">Practice</button>
+          </div>
+
+          <h3>Zorluk</h3>
+          <div class="seg" style="margin-bottom:10px;">
+            <button id="btnEasy" type="button">Kolay</button>
+            <button id="btnMed" type="button">Orta</button>
+            <button id="btnHard" type="button">Zor</button>
+          </div>
+
+          <div id="practiceControls" style="display:none;">
+            <h3>Practice hedef</h3>
+            <div class="miniRow">
+              <button class="btn" id="randGoalBtn" type="button">Yeni hedef (random)</button>
+              <div class="pill">Seçili: <b id="practiceVal">1.70s</b></div>
+            </div>
+            <div style="margin-top:8px;">
+              <input id="goalSlider" type="range" min="1.00" max="2.20" step="0.01" value="1.70" />
+              <div class="sub muted" style="margin-top:6px;">Slider sadece Practice’te geçerli.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arena" id="arena">
+        <div class="toast" id="toast">PERFECT</div>
+        <div class="orb" id="orb">HOLD</div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h3>Son Deneme</h3>
+          <div class="row" style="align-items:baseline;">
+            <div class="big" style="font-size:18px;" id="lastTime">—</div>
+            <div class="pill" id="lastDiff">Fark: —</div>
+            <div class="pill" id="lastVerdict">—</div>
+          </div>
+          <div class="sub muted" id="msg">Hazır.</div>
+          <div class="sub" id="sub">Daireye basılı tut veya Space basılı tut/bırak.</div>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn" id="resetBtn" type="button">Sıfırla</button>
+            <button class="btn primary" id="adBtn" type="button">+1 Hak (Reklam)</button>
+          </div>
+        </div>
+
+        <div class="panel" id="lbPanel">
+          <h3>Daily Leaderboard (son 7 gün)</h3>
+          <div id="lb"></div>
+          <div class="sub muted" style="margin-top:8px;">Not: Sadece bu tarayıcıda saklanır (localStorage).</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px; opacity:.6; font-size:12px;">
+        <div>Daily: 5 hak. Practice: sınırsız. Hak bitince reklam opsiyonel.</div>
+        <div id="dateLbl"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ---------- Date key ----------
+  function todayKey(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // ---------- Deterministic RNG ----------
+  function seededFloat01(seedStr){
+    let h = 2166136261;
+    for (let i=0;i<seedStr.length;i++){
+      h ^= seedStr.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) / 4294967296;
+  }
+  function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+  function round2(x){ return Math.round(x*100)/100; }
+  function fmt2(x){ return x.toFixed(2); }
+
+  // ---------- Daily 3-goal set (deterministic) ----------
+  function dailyGoals(){
+    const base  = seededFloat01("timefeel:v06:"  + todayKey());
+    const base2 = seededFloat01("timefeel:v06b:" + todayKey());
+    const base3 = seededFloat01("timefeel:v06c:" + todayKey());
+
+    // Easy: 1.00–1.60 (0.05 step)
+    // Med : 1.30–2.00 (0.05 step)
+    // Hard: 1.55–2.20 (0.01 step)
+    const easyRaw = 1.00 + 0.60 * base;
+    const medRaw  = 1.30 + 0.70 * base2;
+    const hardRaw = 1.55 + 0.65 * base3;
+
+    const snap05 = (x) => Math.round(x / 0.05) * 0.05;
+
+    const easy = round2(clamp(snap05(easyRaw), 1.00, 1.60));
+    const med  = round2(clamp(snap05(medRaw),  1.30, 2.00));
+    const hard = round2(clamp(hardRaw, 1.55, 2.20));
+
+    if (new Set([easy, med, hard]).size < 3){
+      return { easy, med, hard: round2(clamp(hard + 0.01, 1.55, 2.20)) };
+    }
+    return { easy, med, hard };
+  }
+
+  const DAILY_GOALS = dailyGoals();
+
+  // ---------- Mode-based tolerance profiles ----------
+  const TOL_PROFILE = {
+    easy: { start: 90, min: 50, max: 150 },
+    med:  { start: 80, min: 40, max: 140 },
+    hard: { start: 70, min: 35, max: 130 },
+  };
+
+  // ---------- Storage ----------
+  const LS_PREFIX = "timefeel_v06:";
+  function loadJSON(k, fallback){
+    try{
+      const v = localStorage.getItem(LS_PREFIX + k);
+      return v ? JSON.parse(v) : fallback;
+    }catch{ return fallback; }
+  }
+  function saveJSON(k, v){
+    try{ localStorage.setItem(LS_PREFIX + k, JSON.stringify(v)); }catch{}
+  }
+
+  // ---------- State ----------
+  let mode = loadJSON("mode", "daily"); // daily | practice
+  let diff = loadJSON("diff", "med");   // easy | med | hard
+  if (!TOL_PROFILE[diff]) diff = "med";
+  if (mode !== "daily" && mode !== "practice") mode = "daily";
+
+  const LIVES_MAX_DAILY = 5;
+  let lives = LIVES_MAX_DAILY;
+  let streak = 0;
+
+  let toleranceMs = TOL_PROFILE[diff].start;
+
+  // Target: daily fixed by seed; practice adjustable
+  let targetSecDaily = DAILY_GOALS[diff];
+  let targetSecPractice = loadJSON("practice_target", 1.70);
+  targetSecPractice = clamp(Number(targetSecPractice) || 1.70, 1.00, 2.20);
+
+  // Holding
+  let holding = false;
+  let holdStart = 0;
+
+  // Last attempt
+  let lastTimeSec = null;
+  let lastDiffMs = null;
+  let lastVerdict = "—";
+
+  // Best today per difficulty (daily only)
+  function bestKeyForDiff(d){ return `best:${todayKey()}:${d}`; }
+  let bestToday = loadJSON(bestKeyForDiff(diff), 0);
+
+  // History per difficulty: [{date, diff, goal, best}]
+  let history = loadJSON("history", []);
+
+  function upsertTodayHistory(){
+    const t = todayKey();
+    for (const d of ["easy","med","hard"]){
+      const key = bestKeyForDiff(d);
+      const best = loadJSON(key, 0);
+      const existing = history.find(x => x.date === t && x.diff === d);
+      if (existing){
+        existing.goal = DAILY_GOALS[d];
+        existing.best = Math.max(existing.best || 0, best);
+      } else {
+        history.unshift({ date: t, diff: d, goal: DAILY_GOALS[d], best });
+      }
+    }
+    // keep last 7 per diff (max 21)
+    const trimmed = [];
+    const counts = {easy:0, med:0, hard:0};
+    for (const item of history){
+      if (counts[item.diff] < 7){
+        trimmed.push(item);
+        counts[item.diff] += 1;
+      }
+      if (trimmed.length >= 21) break;
+    }
+    history = trimmed;
+    saveJSON("history", history);
+  }
+
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+
+  const arena = $("arena");
+  const orb = $("orb");
+  const toast = $("toast");
+
+  const modeLbl = $("modeLbl");
+  const livesPill = $("livesPill");
+  const livesEl = $("lives");
+  const tolEl = $("tol");
+  const streakEl = $("streak");
+  const goalEl = $("goal");
+
+  const lastTimeEl = $("lastTime");
+  const lastDiffEl = $("lastDiff");
+  const lastVerdictEl = $("lastVerdict");
+
+  const msgEl = $("msg");
+  const subEl = $("sub");
+
+  const lbPanel = $("lbPanel");
+  const lbEl = $("lb");
+
+  const resetBtn = $("resetBtn");
+  const adBtn = $("adBtn");
+
+  const btnDaily = $("btnDaily");
+  const btnPractice = $("btnPractice");
+  const btnEasy = $("btnEasy");
+  const btnMed = $("btnMed");
+  const btnHard = $("btnHard");
+
+  const practiceControls = $("practiceControls");
+  const randGoalBtn = $("randGoalBtn");
+  const goalSlider = $("goalSlider");
+  const practiceVal = $("practiceVal");
+
+  const dateLbl = $("dateLbl");
+  dateLbl.textContent = todayKey();
+
+  // ---------- Audio (minimal) ----------
+  let audioCtx = null;
+  function beep(freq=200, dur=0.03, gainVal=0.03){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.value = gainVal;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0);
+      o.stop(t0 + dur);
+    }catch{}
+  }
+
+  // ---------- UI helpers ----------
+  function showToast(text, good){
+    toast.textContent = text;
+    toast.className = "toast show " + (good ? "good" : "bad");
+    setTimeout(()=> toast.className = "toast", 420);
+  }
+  function setHolding(on){
+    orb.classList.toggle("holding", on);
+    orb.textContent = on ? "…" : "HOLD";
+  }
+  function signedMs(x){
+    const n = Math.round(x);
+    return (n >= 0 ? "+" : "") + n + "ms";
+  }
+  function confettiBurst(count=16){
+    const rect = arena.getBoundingClientRect();
+    for (let i=0;i<count;i++){
+      const el = document.createElement("div");
+      el.className = "confetti";
+      const x = rect.width * (0.25 + Math.random()*0.5);
+      el.style.left = `${x}px`;
+      el.style.top = `0px`;
+      const hue = Math.floor(Math.random()*360);
+      el.style.background = `hsl(${hue} 90% 70%)`;
+      el.style.animationDuration = `${620 + Math.random()*220}ms`;
+      arena.appendChild(el);
+      setTimeout(()=> el.remove(), 900);
+    }
+  }
+
+  function activeTargetSec(){
+    return mode === "daily" ? targetSecDaily : targetSecPractice;
+  }
+
+  function applyDiffProfile(){
+    toleranceMs = TOL_PROFILE[diff].start;
+  }
+  function clampTol(){
+    const p = TOL_PROFILE[diff];
+    toleranceMs = clamp(toleranceMs, p.min, p.max);
+  }
+
+  function setActiveButtons(){
+    btnDaily.classList.toggle("active", mode === "daily");
+    btnPractice.classList.toggle("active", mode === "practice");
+    btnEasy.classList.toggle("active", diff === "easy");
+    btnMed.classList.toggle("active", diff === "med");
+    btnHard.classList.toggle("active", diff === "hard");
+  }
+
+  function renderLastAttempt(){
+    if (lastTimeSec == null){
+      lastTimeEl.textContent = "—";
+      lastDiffEl.textContent = "Fark: —";
+      lastVerdictEl.textContent = "—";
+      return;
+    }
+    lastTimeEl.textContent = `Son Deneme: ${lastTimeSec.toFixed(2)}s`;
+    lastDiffEl.textContent = `Fark: ${signedMs(lastDiffMs)}`;
+    lastVerdictEl.textContent = lastVerdict;
+  }
+
+  function renderLB(){
+    upsertTodayHistory();
+    const filtered = history.filter(x => x.diff === diff).slice(0, 7);
+    lbEl.innerHTML = "";
+    if (!filtered.length){
+      lbEl.innerHTML = '<div class="sub muted">Henüz veri yok.</div>';
+      return;
+    }
+    for (const item of filtered){
+      const row = document.createElement("div");
+      row.className = "lbItem";
+      const left = document.createElement("div");
+      left.innerHTML = `<div style="font-weight:850;">${item.date}</div><div class="muted">Hedef: ${fmt2(item.goal)}s</div>`;
+      const right = document.createElement("div");
+      right.style.fontWeight = "950";
+      right.textContent = String(item.best || 0);
+      row.appendChild(left);
+      row.appendChild(right);
+      lbEl.appendChild(row);
+    }
+  }
+
+  function render(){
+    modeLbl.textContent = mode === "daily" ? "Daily" : "Practice";
+
+    livesPill.style.display = (mode === "daily") ? "inline-flex" : "none";
+    lbPanel.style.display = (mode === "daily") ? "block" : "none";
+    adBtn.style.display = (mode === "daily") ? "inline-flex" : "none";
+
+    practiceControls.style.display = (mode === "practice") ? "block" : "none";
+
+    // daily target depends on diff
+    targetSecDaily = DAILY_GOALS[diff];
+
+    goalEl.textContent = fmt2(activeTargetSec());
+    tolEl.textContent = Math.round(toleranceMs).toString();
+    streakEl.textContent = String(streak);
+
+    livesEl.textContent = String(lives);
+    adBtn.disabled = !(mode === "daily" && lives <= 0);
+
+    goalSlider.value = fmt2(targetSecPractice);
+    practiceVal.textContent = `${fmt2(targetSecPractice)}s`;
+
+    setActiveButtons();
+    renderLastAttempt();
+
+    if (mode === "daily") renderLB();
+  }
+
+  // ---------- Game flow ----------
+  function resetRunState(keepLives){
+    holding = false;
+    setHolding(false);
+
+    streak = 0;
+    applyDiffProfile();
+
+    if (mode === "daily" && !keepLives){
+      lives = LIVES_MAX_DAILY;
+    }
+
+    lastTimeSec = null;
+    lastDiffMs = null;
+    lastVerdict = "—";
+
+    msgEl.textContent = "Hazır.";
+    subEl.textContent = mode === "daily"
+      ? `Bugünün hedefi: ${fmt2(DAILY_GOALS[diff])}s — Basılı tut ve bırak.`
+      : `Hedef: ${fmt2(targetSecPractice)}s — Basılı tut ve bırak.`;
+
+    render();
+  }
+
+  function setMode(newMode){
+    if (newMode !== "daily" && newMode !== "practice") return;
+    mode = newMode;
+    saveJSON("mode", mode);
+
+    // Daily'e girince 5 hak verelim (soğutmasın diye her geçişte resetlemiyoruz; ama ilk girişte full olsun):
+    if (mode === "daily" && lives <= 0) lives = LIVES_MAX_DAILY;
+
+    resetRunState(true);
+  }
+
+  function setDiff(newDiff){
+    if (!TOL_PROFILE[newDiff]) return;
+    diff = newDiff;
+    saveJSON("diff", diff);
+
+    bestToday = loadJSON(bestKeyForDiff(diff), 0);
+
+    // diff değişince daily target değişir; practice target değişmez
+    resetRunState(true);
+  }
+
+  function setPracticeTarget(sec){
+    targetSecPractice = clamp(sec, 1.00, 2.20);
+    saveJSON("practice_target", targetSecPractice);
+    if (mode === "practice"){
+      msgEl.textContent = "Hedef güncellendi.";
+      subEl.textContent = `Hedef: ${fmt2(targetSecPractice)}s — Basılı tut ve bırak.`;
+    }
+    render();
+  }
+
+  function onPress(){
+    if (holding) return;
+
+    if (mode === "daily" && lives <= 0){
+      msgEl.textContent = "Hakkın bitti.";
+      subEl.textContent = "İstersen “+1 Hak (Reklam)” ile devam edebilirsin.";
+      showToast("NO LIVES", false);
+      beep(120, 0.05, 0.03);
+      return;
+    }
+
+    holding = true;
+    holdStart = performance.now();
+    setHolding(true);
+
+    msgEl.textContent = "Tutuyorsun…";
+    subEl.textContent = `Hedef: ${fmt2(activeTargetSec())}s — Tam o anda bırak.`;
+    beep(170, 0.02, 0.025);
+  }
+
+  function onRelease(){
+    if (!holding) return;
+    holding = false;
+    setHolding(false);
+
+    const elapsedMs = performance.now() - holdStart;
+    const elapsedSec = elapsedMs / 1000;
+
+    const goalMs = activeTargetSec() * 1000;
+    const diffMs = elapsedMs - goalMs;
+    const abs = Math.abs(diffMs);
+
+    lastTimeSec = elapsedSec;
+    lastDiffMs = diffMs;
+
+    const ok = abs <= toleranceMs;
+    const perfect = abs <= toleranceMs * 0.35;
+
+    if (ok){
+      streak += 1;
+      if (streak % 5 === 0) toleranceMs -= (diff === "hard" ? 6 : diff === "easy" ? 4 : 5);
+
+      lastVerdict = perfect ? "PERFECT" : "NICE";
+      showToast(lastVerdict, true);
+      beep(520, 0.03, 0.03);
+      if (perfect) confettiBurst(14);
+
+      msgEl.textContent = "Başarılı!";
+      subEl.textContent = `Sen: ${elapsedSec.toFixed(2)}s • Fark: ${signedMs(diffMs)} • Devam!`;
+
+      if (mode === "daily"){
+        // update best for today/diff
+        const key = bestKeyForDiff(diff);
+        const currentBest = loadJSON(key, 0);
+        if (streak > currentBest){
+          saveJSON(key, streak);
+        }
+      }
+    } else {
+      // fail
+      streak = 0;
+      toleranceMs += (diff === "hard" ? 5 : diff === "easy" ? 3 : 4);
+
+      lastVerdict = diffMs < 0 ? "EARLY" : "LATE";
+      showToast(lastVerdict, false);
+      beep(120, 0.06, 0.03);
+
+      if (mode === "daily"){
+        lives = Math.max(0, lives - 1);
+        msgEl.textContent = diffMs < 0 ? "Erken bıraktın." : "Geç bıraktın.";
+        subEl.textContent = `Sen: ${elapsedSec.toFixed(2)}s • Fark: ${signedMs(diffMs)} • Hak: ${lives}`;
+        if (lives === 0){
+          msgEl.textContent = "Hakkın bitti.";
+          subEl.textContent = "İstersen “+1 Hak (Reklam)” ile devam edebilirsin.";
+        }
+      } else {
+        msgEl.textContent = diffMs < 0 ? "Erken bıraktın." : "Geç bıraktın.";
+        subEl.textContent = `Sen: ${elapsedSec.toFixed(2)}s • Fark: ${signedMs(diffMs)} • Tekrar dene.`;
+      }
+    }
+
+    clampTol();
+    render();
+  }
+
+  // ---------- Rewarded ad (simulated simple) ----------
+  function grantLife(){
+    if (mode !== "daily") return;
+    if (lives > 0) return;
+    lives = Math.min(LIVES_MAX_DAILY, lives + 1);
+    msgEl.textContent = "+1 hak aldın.";
+    subEl.textContent = "Devam edebilirsin.";
+    showToast("+1 LIFE", true);
+    beep(420, 0.03, 0.03);
+    render();
+  }
+
+  // ---------- Practice controls ----------
+  function randomPracticeTarget(){
+    // uniform in [1.00, 2.20], 2 decimals
+    const r = Math.random();
+    const sec = 1.00 + (2.20 - 1.00) * r;
+    setPracticeTarget(round2(sec));
+  }
+
+  // ---------- Events ----------
+  arena.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onPress(); });
+  window.addEventListener("pointerup", ()=> onRelease());
+
+  window.addEventListener("keydown", (e)=>{
+    if (e.code === "Space"){
+      e.preventDefault();
+      if (!holding) onPress();
+    }
+  });
+  window.addEventListener("keyup", (e)=>{
+    if (e.code === "Space"){
+      e.preventDefault();
+      onRelease();
+    }
+  });
+
+  resetBtn.addEventListener("click", ()=> resetRunState(false));
+  adBtn.addEventListener("click", ()=> grantLife());
+
+  btnDaily.addEventListener("click", ()=> setMode("daily"));
+  btnPractice.addEventListener("click", ()=> setMode("practice"));
+
+  btnEasy.addEventListener("click", ()=> setDiff("easy"));
+  btnMed.addEventListener("click", ()=> setDiff("med"));
+  btnHard.addEventListener("click", ()=> setDiff("hard"));
+
+  randGoalBtn.addEventListener("click", ()=> randomPracticeTarget());
+  goalSlider.addEventListener("input", (e)=> setPracticeTarget(parseFloat(e.target.value)));
+
+  // ---------- Init ----------
+  upsertTodayHistory();
+  resetRunState(true);
+
+  // If user opens on practice, keep practice target UI correct
+  if (mode === "practice"){
+    msgEl.textContent = "Hazır.";
+    subEl.textContent = `Hedef: ${fmt2(targetSecPractice)}s — Basılı tut ve bırak.`;
+    render();
+  } else {
+    msgEl.textContent = "Hazır.";
+    subEl.textContent = `Bugünün hedefi: ${fmt2(DAILY_GOALS[diff])}s — Basılı tut ve bırak.`;
+    render();
+  }
+})();
+</script>
+</body>
+</html>
