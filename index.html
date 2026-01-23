@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeFeel v1.0</title>
+  <title>TimeFeel v1.1</title>
 
   <style>
     :root { color-scheme: dark; }
@@ -290,7 +290,7 @@
             </svg>
           </div>
           <div>
-            <div class="headline" id="goalLine">Bugünün hedefi: 1.60s (Orta)</div>
+            <div class="headline" id="goalLine">Bugünün hedefi: 6.20s (Orta)</div>
             <div class="mini" id="miniModeLine" style="margin-top:6px;">Daily • Orta</div>
           </div>
         </div>
@@ -359,12 +359,12 @@
 
           <div id="practiceBox" style="display:none; margin-top:12px;">
             <div class="row" style="align-items:center;">
-              <div class="pill">Practice hedefi: <b id="pVal">1.70s</b></div>
+              <div class="pill">Practice hedefi: <b id="pVal">0.00s</b></div>
               <button class="btn" id="randBtn" type="button">Random</button>
             </div>
             <div style="margin-top:10px;">
-              <input id="slider" type="range" min="1.00" max="2.20" step="0.01" value="1.70" />
-              <div class="mini" style="margin-top:8px;">Slider sadece Practice’te geçerli.</div>
+              <input id="slider" type="range" min="0.00" max="20.00" step="0.01" value="6.20" />
+              <div class="mini" style="margin-top:8px;">0.00–20.00 saniye</div>
             </div>
           </div>
         </div>
@@ -378,7 +378,7 @@
 
       <div class="footer">
         <div>Daily: 5 hak • Practice: sınırsız</div>
-        <div>v1.0</div>
+        <div>v1.1</div>
       </div>
     </div>
   </div>
@@ -413,39 +413,47 @@
     const n = Math.round(x);
     return (n >= 0 ? "+" : "") + n + "ms";
   }
+  function fmtSecDynamic(sec){
+    // 0–9.99 => 2 decimals, 10–20 => 1 decimal (daha okunur)
+    if (sec < 10) return sec.toFixed(2);
+    return sec.toFixed(1);
+  }
 
-  // ---------- Daily goals ----------
+  // ---------- Daily goals (5–8s) ----------
   function dailyGoals(){
-    const base  = seededFloat01("timefeel:v10:"  + todayKey());
-    const base2 = seededFloat01("timefeel:v10b:" + todayKey());
-    const base3 = seededFloat01("timefeel:v10c:" + todayKey());
+    const base  = seededFloat01("timefeel:v11:"  + todayKey());
+    const base2 = seededFloat01("timefeel:v11b:" + todayKey());
+    const base3 = seededFloat01("timefeel:v11c:" + todayKey());
 
-    const easyRaw = 1.00 + 0.60 * base;
-    const medRaw  = 1.30 + 0.70 * base2;
-    const hardRaw = 1.55 + 0.65 * base3;
+    // 5.00–8.00 aralığı
+    const easyRaw = 5.00 + 3.00 * base;
+    const medRaw  = 5.00 + 3.00 * base2;
+    const hardRaw = 5.00 + 3.00 * base3;
 
     const snap05 = (x) => Math.round(x / 0.05) * 0.05;
 
-    const easy = round2(clamp(snap05(easyRaw), 1.00, 1.60));
-    const med  = round2(clamp(snap05(medRaw),  1.30, 2.00));
-    const hard = round2(clamp(hardRaw,          1.55, 2.20));
+    const easy = round2(clamp(snap05(easyRaw), 5.00, 8.00));
+    const med  = round2(clamp(snap05(medRaw),  5.00, 8.00));
+    const hard = round2(clamp(snap05(hardRaw), 5.00, 8.00));
 
+    // aynı çıkarsa çok küçük kaydır
     if (new Set([easy, med, hard]).size < 3){
-      return { easy, med, hard: round2(clamp(hard + 0.01, 1.55, 2.20)) };
+      return { easy, med, hard: round2(clamp(hard + 0.05, 5.00, 8.00)) };
     }
     return { easy, med, hard };
   }
   const DAILY = dailyGoals();
 
-  // ---------- Tolerance profiles ----------
+  // ---------- Tolerance profiles (ms) ----------
+  // 5–8 saniye için toleransı biraz büyütmek daha iyi his verir
   const TOL = {
-    easy: { start: 90, min: 50, max: 150 },
-    med:  { start: 80, min: 40, max: 140 },
-    hard: { start: 70, min: 35, max: 130 },
+    easy: { start: 180, min: 90,  max: 320 },
+    med:  { start: 150, min: 80,  max: 280 },
+    hard: { start: 120, min: 70,  max: 240 },
   };
 
   // ---------- Storage ----------
-  const LS = "timefeel_v10:";
+  const LS = "timefeel_v11:";
   const load = (k, fb) => { try{ const v = localStorage.getItem(LS+k); return v ? JSON.parse(v) : fb; }catch{ return fb; } };
   const save = (k, v) => { try{ localStorage.setItem(LS+k, JSON.stringify(v)); }catch{} };
 
@@ -461,7 +469,8 @@
   let streak = 0;
   let tolMs = TOL[diff].start;
 
-  let practiceTarget = clamp(Number(load("practice_target", 1.70)) || 1.70, 1.00, 2.20);
+  // Practice: 0–20s
+  let practiceTarget = clamp(Number(load("practice_target", 6.20)) || 6.20, 0.00, 20.00);
 
   let holding = false;
   let startMs = 0;
@@ -660,10 +669,9 @@
     if (mode === "daily"){
       goalLine.textContent = `Bugünün hedefi: ${fmt2(DAILY[diff])}s (${diffLabel})`;
     } else {
-      goalLine.textContent = `Hedef: ${fmt2(practiceTarget)}s (${diffLabel})`;
+      goalLine.textContent = `Hedef: ${fmtSecDynamic(practiceTarget)}s (${diffLabel})`;
     }
 
-    // show/hide sections
     pillLives.style.display = mode==="daily" ? "inline-flex" : "none";
     pillBest.style.display  = mode==="daily" ? "inline-flex" : "none";
     lbPanel.style.display   = mode==="daily" ? "block" : "none";
@@ -679,8 +687,8 @@
       renderLB();
     }
 
-    slider.value = fmt2(practiceTarget);
-    pVal.textContent = `${fmt2(practiceTarget)}s`;
+    slider.value = String(practiceTarget);
+    pVal.textContent = `${fmtSecDynamic(practiceTarget)}s`;
   }
 
   function hardReset(refillLives){
@@ -727,8 +735,8 @@
     const diffMs = elapsedMs - goalMs;
     const abs = Math.abs(diffMs);
 
-    lastYou.textContent = `${elapsedSec.toFixed(2)}s`;
-    lastGoal.textContent = `${fmt2(goalSec)}s`;
+    lastYou.textContent = `${fmtSecDynamic(elapsedSec)}s`;
+    lastGoal.textContent = `${fmtSecDynamic(goalSec)}s`;
     lastDiff.textContent = signedMs(diffMs);
 
     const ok = abs <= tolMs;
@@ -736,7 +744,7 @@
 
     if (ok){
       streak += 1;
-      if (streak % 5 === 0) tolMs -= (diff==="hard"?6:diff==="easy"?4:5);
+      if (streak % 5 === 0) tolMs -= (diff==="hard"?10:diff==="easy"?7:8);
 
       lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
       showToast(lastVerdict.textContent, true);
@@ -752,7 +760,7 @@
       }
     } else {
       streak = 0;
-      tolMs += (diff==="hard"?5:diff==="easy"?3:4);
+      tolMs += (diff==="hard"?10:diff==="easy"?7:8);
 
       lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
       showToast(lastVerdict.textContent, false);
@@ -777,7 +785,7 @@
       const best = load(bestKey(diff), 0);
       return `TimeFeel • Daily\nHedef: ${fmt2(DAILY[diff])}s (${diffLabel})\nEn iyi streak: ${best}\n${location.href}`;
     } else {
-      return `TimeFeel • Practice\nHedef: ${fmt2(practiceTarget)}s (${diffLabel})\n${location.href}`;
+      return `TimeFeel • Practice\nHedef: ${fmtSecDynamic(practiceTarget)}s (${diffLabel})\n${location.href}`;
     }
   }
 
@@ -829,7 +837,7 @@
 
     ctx.fillStyle = "rgba(255,255,255,0.92)";
     ctx.font = "950 66px ui-sans-serif, system-ui";
-    ctx.fillText(`Hedef: ${fmt2(goalSec)}s`, cx+46, cy+270);
+    ctx.fillText(`Hedef: ${fmtSecDynamic(goalSec)}s`, cx+46, cy+270);
 
     ctx.fillStyle = "rgba(255,255,255,0.65)";
     ctx.font = "900 30px ui-sans-serif, system-ui";
@@ -922,7 +930,7 @@
     hardReset(false);
   }
   function setPracticeTarget(sec){
-    practiceTarget = clamp(sec, 1.00, 2.20);
+    practiceTarget = clamp(sec, 0.00, 20.00);
     save("practice_target", practiceTarget);
     if (mode==="practice") msg.textContent = "Hedef güncellendi.";
     render();
@@ -959,11 +967,105 @@
   });
 
   randBtn.addEventListener("click", ()=>{
-    const r = 1.00 + (2.20 - 1.00) * Math.random();
+    const r = 0.00 + (20.00 - 0.00) * Math.random();
     setPracticeTarget(round2(r));
     sSwitch();
   });
   slider.addEventListener("input", (e)=> setPracticeTarget(parseFloat(e.target.value)));
+
+  // ---------- Gameplay ----------
+  function onPress(){
+    ensureAudio();
+    if (holding) return;
+
+    if (mode==="daily" && lives<=0){
+      msg.textContent = "Hakkın bitti. +2 hak al.";
+      showToast("NO LIVES", false);
+      sFail();
+      return;
+    }
+
+    holding = true;
+    startMs = performance.now();
+    setHolding(true);
+    msg.textContent = "Tutuyorsun…";
+    sPress();
+  }
+
+  function onRelease(){
+    if (!holding) return;
+    holding = false;
+    setHolding(false);
+
+    const elapsedMs = performance.now() - startMs;
+    const elapsedSec = elapsedMs / 1000;
+
+    const goalSec = currentGoalSec();
+    const goalMs = goalSec * 1000;
+    const diffMs = elapsedMs - goalMs;
+    const abs = Math.abs(diffMs);
+
+    lastYou.textContent = `${fmtSecDynamic(elapsedSec)}s`;
+    lastGoal.textContent = `${fmtSecDynamic(goalSec)}s`;
+    lastDiff.textContent = signedMs(diffMs);
+
+    const ok = abs <= tolMs;
+    const perfect = abs <= tolMs * 0.35;
+
+    if (ok){
+      streak += 1;
+      if (streak % 5 === 0) tolMs -= (diff==="hard"?10:diff==="easy"?7:8);
+
+      lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
+      showToast(lastVerdict.textContent, true);
+      msg.textContent = "Başarılı!";
+
+      if (perfect){ confettiBurst(14); sPerfect(); }
+      else { sNice(); }
+
+      if (mode==="daily"){
+        const k = bestKey(diff);
+        const b = load(k, 0);
+        if (streak > b) save(k, streak);
+      }
+    } else {
+      streak = 0;
+      tolMs += (diff==="hard"?10:diff==="easy"?7:8);
+
+      lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
+      showToast(lastVerdict.textContent, false);
+      sFail();
+
+      if (mode==="daily"){
+        lives = Math.max(0, lives - 1);
+        msg.textContent = lives === 0 ? "Hakkın bitti. +2 hak al." : "Hata. Tekrar dene.";
+      } else {
+        msg.textContent = "Hata. Tekrar dene.";
+      }
+    }
+
+    clampTol();
+    render();
+  }
+
+  function resetAttemptUI(){
+    lastYou.textContent = "—";
+    lastGoal.textContent = "—";
+    lastDiff.textContent = "—";
+    lastVerdict.textContent = "—";
+  }
+
+  function hardReset(refillLives){
+    holding = false;
+    setHolding(false);
+    streak = 0;
+    tolMs = TOL[diff].start;
+    clampTol();
+    if (mode==="daily" && refillLives) lives = LIVES_MAX;
+    msg.textContent = "Hazır.";
+    resetAttemptUI();
+    render();
+  }
 
   // ---------- Inputs ----------
   arena.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onPress(); }, { passive:false });
