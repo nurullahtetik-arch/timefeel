@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeFeel v1.1</title>
+  <title>TimeFeel v1.2</title>
 
   <style>
     :root { color-scheme: dark; }
@@ -19,7 +19,6 @@
       overflow-x:hidden;
     }
 
-    /* --- Backdrop --- */
     .bg {
       position:fixed; inset:0;
       background:
@@ -48,9 +47,10 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       padding:16px;
+      position:relative;
+      overflow:hidden;
     }
 
-    /* --- Top --- */
     .top {
       display:flex;
       align-items:center;
@@ -106,7 +106,6 @@
       box-shadow: 0 10px 30px rgba(78,163,255,0.08);
     }
 
-    /* --- Stats (simplified) --- */
     .stats {
       margin-top:12px;
       display:flex;
@@ -133,7 +132,6 @@
     .dot.blue  { background: rgba(78,163,255,0.75); }
     .dot.red   { background: rgba(255,120,140,0.80); }
 
-    /* --- Arena --- */
     .arena{
       margin-top:14px;
       height:360px;
@@ -188,7 +186,6 @@
     .good{ color: rgba(120,255,190,0.95); }
     .bad{ color: rgba(255,120,140,0.95); }
 
-    /* --- Bottom --- */
     .bottom{ margin-top:14px; display:grid; grid-template-columns: 1.15fr 0.85fr; gap:12px; }
     @media (max-width: 820px){
       .controls{ align-items:flex-start; }
@@ -265,6 +262,56 @@
       font-size:12px;
       opacity:.5;
     }
+
+    /* --- Gate overlay --- */
+    .gate {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(0,0,0,0.32);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 30;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .gate.hidden { opacity:0; pointer-events:none; transform: translateY(8px); }
+
+    .gateCard{
+      width:min(520px, 92vw);
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
+      padding:16px;
+    }
+    .gateTitle{
+      font-size:12px;
+      opacity:.65;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+    .gateGoal{
+      margin-top:10px;
+      font-size:30px;
+      font-weight:950;
+      letter-spacing:0.01em;
+      line-height:1.15;
+    }
+    .gateSub{
+      margin-top:8px;
+      font-size:12px;
+      opacity:.62;
+    }
+    .gateArena{
+      margin-top:14px;
+      height:280px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:
+        radial-gradient(800px 320px at 50% 0%, rgba(78,163,255,0.14), rgba(255,255,255,0.01));
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+      touch-action:none;
+    }
   </style>
 </head>
 
@@ -273,8 +320,28 @@
   <div class="grain"></div>
 
   <div class="wrap">
-    <div class="card">
-      <div class="top">
+    <div class="card" id="rootCard">
+
+      <!-- Gate overlay -->
+      <div class="gate" id="gate">
+        <div class="gateCard">
+          <div class="gateTitle">GİRİŞ TESTİ</div>
+          <div class="gateGoal" id="gateGoal">Hedef: 1.20s</div>
+          <div class="gateSub" id="gateMsg">Basılı tut → hedefte bırak. Başarı = oyuna giriş.</div>
+
+          <div class="gateArena" id="gateArena">
+            <div class="toast" id="gateToast">OK</div>
+            <div class="orbWrap">
+              <div class="ring" aria-hidden="true"></div>
+              <div class="orb" id="gateOrb" aria-label="Hold">HOLD</div>
+            </div>
+            <div class="hint">Basılı tut / bırak</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main game UI -->
+      <div class="top" id="mainTop">
         <div class="brandRow">
           <div class="logo" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -318,36 +385,21 @@
 
       <div class="arena" id="arena">
         <div class="toast" id="toast">PERFECT</div>
-
         <div class="orbWrap">
           <div class="ring" aria-hidden="true"></div>
           <div class="orb" id="orb" aria-label="Hold">HOLD</div>
         </div>
-
         <div class="hint">Basılı tut / bırak</div>
       </div>
 
       <div class="bottom">
         <div class="panel">
           <h3>Son deneme</h3>
-
           <div class="row">
-            <div class="metric">
-              <div class="k">Sen</div>
-              <div class="v" id="lastYou">—</div>
-            </div>
-            <div class="metric">
-              <div class="k">Hedef</div>
-              <div class="v" id="lastGoal">—</div>
-            </div>
-            <div class="metric">
-              <div class="k">Fark</div>
-              <div class="v" id="lastDiff">—</div>
-            </div>
-            <div class="metric">
-              <div class="k">Sonuç</div>
-              <div class="v" id="lastVerdict">—</div>
-            </div>
+            <div class="metric"><div class="k">Sen</div><div class="v" id="lastYou">—</div></div>
+            <div class="metric"><div class="k">Hedef</div><div class="v" id="lastGoal">—</div></div>
+            <div class="metric"><div class="k">Fark</div><div class="v" id="lastDiff">—</div></div>
+            <div class="metric"><div class="k">Sonuç</div><div class="v" id="lastVerdict">—</div></div>
           </div>
 
           <div class="mini" style="margin-top:10px;" id="msg">Hazır.</div>
@@ -378,7 +430,7 @@
 
       <div class="footer">
         <div>Daily: 5 hak • Practice: sınırsız</div>
-        <div>v1.1</div>
+        <div>v1.2</div>
       </div>
     </div>
   </div>
@@ -398,14 +450,6 @@
     const dd = String(d.getDate()).padStart(2,'0');
     return `${yyyy}-${mm}-${dd}`;
   }
-  function seededFloat01(seedStr){
-    let h = 2166136261;
-    for (let i=0;i<seedStr.length;i++){
-      h ^= seedStr.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return (h >>> 0) / 4294967296;
-  }
   function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
   function round2(x){ return Math.round(x*100)/100; }
   function fmt2(x){ return x.toFixed(2); }
@@ -414,18 +458,24 @@
     return (n >= 0 ? "+" : "") + n + "ms";
   }
   function fmtSecDynamic(sec){
-    // 0–9.99 => 2 decimals, 10–20 => 1 decimal (daha okunur)
     if (sec < 10) return sec.toFixed(2);
     return sec.toFixed(1);
+  }
+  function seededFloat01(seedStr){
+    let h = 2166136261;
+    for (let i=0;i<seedStr.length;i++){
+      h ^= seedStr.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0) / 4294967296;
   }
 
   // ---------- Daily goals (5–8s) ----------
   function dailyGoals(){
-    const base  = seededFloat01("timefeel:v11:"  + todayKey());
-    const base2 = seededFloat01("timefeel:v11b:" + todayKey());
-    const base3 = seededFloat01("timefeel:v11c:" + todayKey());
+    const base  = seededFloat01("timefeel:v12:"  + todayKey());
+    const base2 = seededFloat01("timefeel:v12b:" + todayKey());
+    const base3 = seededFloat01("timefeel:v12c:" + todayKey());
 
-    // 5.00–8.00 aralığı
     const easyRaw = 5.00 + 3.00 * base;
     const medRaw  = 5.00 + 3.00 * base2;
     const hardRaw = 5.00 + 3.00 * base3;
@@ -436,7 +486,6 @@
     const med  = round2(clamp(snap05(medRaw),  5.00, 8.00));
     const hard = round2(clamp(snap05(hardRaw), 5.00, 8.00));
 
-    // aynı çıkarsa çok küçük kaydır
     if (new Set([easy, med, hard]).size < 3){
       return { easy, med, hard: round2(clamp(hard + 0.05, 5.00, 8.00)) };
     }
@@ -445,19 +494,22 @@
   const DAILY = dailyGoals();
 
   // ---------- Tolerance profiles (ms) ----------
-  // 5–8 saniye için toleransı biraz büyütmek daha iyi his verir
   const TOL = {
     easy: { start: 180, min: 90,  max: 320 },
     med:  { start: 150, min: 80,  max: 280 },
     hard: { start: 120, min: 70,  max: 240 },
   };
 
+  // Gate tolerans (0–3s için daha sıkı ama adil)
+  const GATE_TOL_MS = 140;
+  const GATE_PERF_MS = 60;
+
   // ---------- Storage ----------
-  const LS = "timefeel_v11:";
+  const LS = "timefeel_v12:";
   const load = (k, fb) => { try{ const v = localStorage.getItem(LS+k); return v ? JSON.parse(v) : fb; }catch{ return fb; } };
   const save = (k, v) => { try{ localStorage.setItem(LS+k, JSON.stringify(v)); }catch{} };
 
-  // ---------- State ----------
+  // ---------- State (main) ----------
   let mode = load("mode", "daily");          // daily | practice
   let diff = load("diff", "med");            // easy | med | hard
   if (!TOL[diff]) diff = "med";
@@ -477,6 +529,12 @@
 
   const bestKey = (d) => `best:${todayKey()}:${d}`;
   let history = load("history", []);
+
+  // Gate state (session)
+  let gatePassed = false;
+  let gateTarget = 0;
+  let gateHolding = false;
+  let gateStartMs = 0;
 
   // ---------- Sound ----------
   let soundOn = load("sound_on", true);
@@ -525,6 +583,15 @@
   // ---------- DOM ----------
   const $ = (id) => document.getElementById(id);
 
+  // Gate
+  const gate = $("gate");
+  const gateGoalEl = $("gateGoal");
+  const gateMsg = $("gateMsg");
+  const gateArena = $("gateArena");
+  const gateOrb = $("gateOrb");
+  const gateToast = $("gateToast");
+
+  // Main
   const tabDaily = $("tabDaily");
   const tabPractice = $("tabPractice");
   const shareBtn = $("shareBtn");
@@ -564,21 +631,18 @@
   const lbPanel = $("lbPanel");
   const lb = $("lb");
 
-  [arena, orb].forEach(el => {
-    el.addEventListener("contextmenu", e => e.preventDefault(), { passive:false });
-    el.addEventListener("selectstart", e => e.preventDefault(), { passive:false });
-  });
+  // ---------- Toast helper ----------
+  function showToast(el, text, good){
+    el.textContent = text;
+    el.className = "toast show " + (good ? "good" : "bad");
+    setTimeout(()=> el.className="toast", 420);
+  }
 
-  // ---------- UI helpers ----------
-  function showToast(text, good){
-    toast.textContent = text;
-    toast.className = "toast show " + (good ? "good" : "bad");
-    setTimeout(()=> toast.className="toast", 420);
+  function setHolding(el, on){
+    el.classList.toggle("holding", on);
+    el.textContent = on ? "…" : "HOLD";
   }
-  function setHolding(on){
-    orb.classList.toggle("holding", on);
-    orb.textContent = on ? "…" : "HOLD";
-  }
+
   function confettiBurst(count=14){
     const rect = arena.getBoundingClientRect();
     for (let i=0;i<count;i++){
@@ -593,6 +657,54 @@
     }
   }
 
+  // ---------- Gate logic ----------
+  function newGateTarget(){
+    // 0–3s random, 0.05 snap (çok titiz olmasın)
+    const raw = Math.random() * 3.0;
+    const snap = Math.round(raw / 0.05) * 0.05;
+    gateTarget = clamp(snap, 0.00, 3.00);
+    gateGoalEl.textContent = `Hedef: ${gateTarget.toFixed(2)}s`;
+    gateMsg.textContent = "Basılı tut → hedefte bırak. Başarı = oyuna giriş.";
+  }
+
+  function gatePress(){
+    ensureAudio();
+    if (gatePassed) return;
+    if (gateHolding) return;
+    gateHolding = true;
+    gateStartMs = performance.now();
+    setHolding(gateOrb, true);
+    sPress();
+  }
+
+  function gateRelease(){
+    if (!gateHolding || gatePassed) return;
+    gateHolding = false;
+    setHolding(gateOrb, false);
+
+    const elapsedMs = performance.now() - gateStartMs;
+    const diffMs = elapsedMs - (gateTarget * 1000);
+    const abs = Math.abs(diffMs);
+
+    if (abs <= GATE_TOL_MS){
+      gatePassed = true;
+      showToast(gateToast, abs <= GATE_PERF_MS ? "PERFECT" : "OK", true);
+      sPerfect();
+      gateMsg.textContent = "Giriş başarılı ✅";
+      // kısa animasyon sonra kapat
+      setTimeout(()=>{
+        gate.classList.add("hidden");
+      }, 360);
+    } else {
+      showToast(gateToast, diffMs < 0 ? "EARLY" : "LATE", false);
+      sFail();
+      gateMsg.textContent = `Tekrar dene. Fark: ${signedMs(diffMs)}`;
+      // her başarısızlıkta hedefi yenile (viral/oyunsu his)
+      setTimeout(()=> newGateTarget(), 450);
+    }
+  }
+
+  // ---------- Main game helpers ----------
   function currentGoalSec(){ return mode === "daily" ? DAILY[diff] : practiceTarget; }
   function clampTol(){ tolMs = clamp(tolMs, TOL[diff].min, TOL[diff].max); }
 
@@ -662,7 +774,6 @@
 
   function render(){
     setActiveChips();
-
     const diffLabel = diff==="easy"?"Kolay":diff==="med"?"Orta":"Zor";
     miniModeLine.textContent = (mode==="daily" ? "Daily" : "Practice") + " • " + diffLabel;
 
@@ -693,7 +804,7 @@
 
   function hardReset(refillLives){
     holding = false;
-    setHolding(false);
+    setHolding(orb, false);
     streak = 0;
     tolMs = TOL[diff].start;
     clampTol();
@@ -703,36 +814,40 @@
     render();
   }
 
-  // ---------- Gameplay ----------
+  // ---------- Main gameplay ----------
   function onPress(){
+    // gate kapalı değilse ana oyuna basma
+    if (!gate.classList.contains("hidden")) return;
+
     ensureAudio();
     if (holding) return;
 
     if (mode==="daily" && lives<=0){
       msg.textContent = "Hakkın bitti. +2 hak al.";
-      showToast("NO LIVES", false);
+      showToast(toast, "NO LIVES", false);
       sFail();
       return;
     }
 
     holding = true;
     startMs = performance.now();
-    setHolding(true);
+    setHolding(orb, true);
     msg.textContent = "Tutuyorsun…";
     sPress();
   }
 
   function onRelease(){
+    if (!gate.classList.contains("hidden")) return;
     if (!holding) return;
+
     holding = false;
-    setHolding(false);
+    setHolding(orb, false);
 
     const elapsedMs = performance.now() - startMs;
     const elapsedSec = elapsedMs / 1000;
 
     const goalSec = currentGoalSec();
-    const goalMs = goalSec * 1000;
-    const diffMs = elapsedMs - goalMs;
+    const diffMs = elapsedMs - (goalSec * 1000);
     const abs = Math.abs(diffMs);
 
     lastYou.textContent = `${fmtSecDynamic(elapsedSec)}s`;
@@ -747,7 +862,7 @@
       if (streak % 5 === 0) tolMs -= (diff==="hard"?10:diff==="easy"?7:8);
 
       lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
-      showToast(lastVerdict.textContent, true);
+      showToast(toast, lastVerdict.textContent, true);
       msg.textContent = "Başarılı!";
 
       if (perfect){ confettiBurst(14); sPerfect(); }
@@ -763,7 +878,7 @@
       tolMs += (diff==="hard"?10:diff==="easy"?7:8);
 
       lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
-      showToast(lastVerdict.textContent, false);
+      showToast(toast, lastVerdict.textContent, false);
       sFail();
 
       if (mode==="daily"){
@@ -778,7 +893,7 @@
     render();
   }
 
-  // ---------- Share Card ----------
+  // ---------- Share ----------
   function makeShareText(){
     const diffLabel = diff==="easy"?"Kolay":diff==="med"?"Orta":"Zor";
     if (mode === "daily"){
@@ -846,16 +961,6 @@
     ctx.fillStyle = "rgba(255,255,255,0.90)";
     ctx.font = "950 52px ui-sans-serif, system-ui";
     ctx.fillText(mode === "daily" ? `Best: ${best}` : `Streak: ${streak}`, cx+46, cy+415);
-
-    const ox = cx + cw - 230;
-    const oy = cy + 320;
-    const or = 130;
-    const og = ctx.createRadialGradient(ox-or/3, oy-or/3, 10, ox, oy, or);
-    og.addColorStop(0, "rgba(78,163,255,0.55)");
-    og.addColorStop(0.6, "rgba(78,163,255,0.18)");
-    og.addColorStop(1, "rgba(255,255,255,0.03)");
-    ctx.beginPath(); ctx.arc(ox, oy, or, 0, Math.PI*2); ctx.fillStyle = og; ctx.fill();
-    ctx.strokeStyle = "rgba(78,163,255,0.45)"; ctx.lineWidth = 3; ctx.stroke();
 
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.font = "900 26px ui-sans-serif, system-ui";
@@ -936,7 +1041,6 @@
     render();
   }
 
-  // ---------- Toggle Sound ----------
   function toggleSound(){
     soundOn = !soundOn;
     save("sound_on", soundOn);
@@ -946,7 +1050,7 @@
     sSwitch();
   }
 
-  // ---------- Buttons ----------
+  // ---------- Bind main buttons ----------
   tabDaily.addEventListener("click", ()=> setMode("daily"));
   tabPractice.addEventListener("click", ()=> setMode("practice"));
   diffEasy.addEventListener("click", ()=> setDiff("easy"));
@@ -961,121 +1065,45 @@
     if (mode!=="daily" || lives>0) return;
     lives = Math.min(LIVES_MAX, lives + 2);
     msg.textContent = "+2 hak aldın.";
-    showToast("+2 LIFE", true);
+    showToast(toast, "+2 LIFE", true);
     sNice();
     render();
   });
 
   randBtn.addEventListener("click", ()=>{
-    const r = 0.00 + (20.00 - 0.00) * Math.random();
+    const r = Math.random() * 20.0;
     setPracticeTarget(round2(r));
     sSwitch();
   });
   slider.addEventListener("input", (e)=> setPracticeTarget(parseFloat(e.target.value)));
 
-  // ---------- Gameplay ----------
-  function onPress(){
-    ensureAudio();
-    if (holding) return;
-
-    if (mode==="daily" && lives<=0){
-      msg.textContent = "Hakkın bitti. +2 hak al.";
-      showToast("NO LIVES", false);
-      sFail();
-      return;
-    }
-
-    holding = true;
-    startMs = performance.now();
-    setHolding(true);
-    msg.textContent = "Tutuyorsun…";
-    sPress();
-  }
-
-  function onRelease(){
-    if (!holding) return;
-    holding = false;
-    setHolding(false);
-
-    const elapsedMs = performance.now() - startMs;
-    const elapsedSec = elapsedMs / 1000;
-
-    const goalSec = currentGoalSec();
-    const goalMs = goalSec * 1000;
-    const diffMs = elapsedMs - goalMs;
-    const abs = Math.abs(diffMs);
-
-    lastYou.textContent = `${fmtSecDynamic(elapsedSec)}s`;
-    lastGoal.textContent = `${fmtSecDynamic(goalSec)}s`;
-    lastDiff.textContent = signedMs(diffMs);
-
-    const ok = abs <= tolMs;
-    const perfect = abs <= tolMs * 0.35;
-
-    if (ok){
-      streak += 1;
-      if (streak % 5 === 0) tolMs -= (diff==="hard"?10:diff==="easy"?7:8);
-
-      lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
-      showToast(lastVerdict.textContent, true);
-      msg.textContent = "Başarılı!";
-
-      if (perfect){ confettiBurst(14); sPerfect(); }
-      else { sNice(); }
-
-      if (mode==="daily"){
-        const k = bestKey(diff);
-        const b = load(k, 0);
-        if (streak > b) save(k, streak);
-      }
-    } else {
-      streak = 0;
-      tolMs += (diff==="hard"?10:diff==="easy"?7:8);
-
-      lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
-      showToast(lastVerdict.textContent, false);
-      sFail();
-
-      if (mode==="daily"){
-        lives = Math.max(0, lives - 1);
-        msg.textContent = lives === 0 ? "Hakkın bitti. +2 hak al." : "Hata. Tekrar dene.";
-      } else {
-        msg.textContent = "Hata. Tekrar dene.";
-      }
-    }
-
-    clampTol();
-    render();
-  }
-
-  function resetAttemptUI(){
-    lastYou.textContent = "—";
-    lastGoal.textContent = "—";
-    lastDiff.textContent = "—";
-    lastVerdict.textContent = "—";
-  }
-
-  function hardReset(refillLives){
-    holding = false;
-    setHolding(false);
-    streak = 0;
-    tolMs = TOL[diff].start;
-    clampTol();
-    if (mode==="daily" && refillLives) lives = LIVES_MAX;
-    msg.textContent = "Hazır.";
-    resetAttemptUI();
-    render();
-  }
-
   // ---------- Inputs ----------
-  arena.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onPress(); }, { passive:false });
-  window.addEventListener("pointerup", ()=> onRelease(), { passive:true });
+  // Gate inputs
+  gateArena.addEventListener("pointerdown", (e)=>{ e.preventDefault(); gatePress(); }, { passive:false });
+  window.addEventListener("pointerup", ()=>{ gateRelease(); onRelease(); }, { passive:true });
 
-  window.addEventListener("keydown", (e)=>{ if (e.code==="Space"){ e.preventDefault(); onPress(); } });
-  window.addEventListener("keyup", (e)=>{ if (e.code==="Space"){ e.preventDefault(); onRelease(); } });
+  // Main inputs
+  arena.addEventListener("pointerdown", (e)=>{ e.preventDefault(); onPress(); }, { passive:false });
+
+  window.addEventListener("keydown", (e)=>{
+    if (e.code !== "Space") return;
+    e.preventDefault();
+    // gate açıkken space gate’i çalıştır
+    if (!gate.classList.contains("hidden")) gatePress();
+    else onPress();
+  });
+  window.addEventListener("keyup", (e)=>{
+    if (e.code !== "Space") return;
+    e.preventDefault();
+    if (!gate.classList.contains("hidden")) gateRelease();
+    else onRelease();
+  });
 
   // ---------- Init ----------
   function init(){
+    // Gate: her sayfa açılışında yeni hedef
+    newGateTarget();
+
     setActiveChips();
     render();
     hardReset(false);
