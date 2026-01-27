@@ -3,29 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeFeel v1.3</title>
+  <title>TimeFeel v1.3 • Cosmic Focus</title>
   <style>
-    :root { color-scheme: dark; }
+    :root{
+      color-scheme: dark;
+
+      --bg1:#050B18;
+      --bg2:#020611;
+
+      --cyan:#5EC8FF;
+      --cyan2:#2A3F66;
+
+      --ok:#7DFFD1;
+      --bad:#FF7D8B;
+
+      --glass: rgba(255,255,255,0.04);
+      --stroke: rgba(255,255,255,0.10);
+      --stroke2: rgba(255,255,255,0.08);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+    }
+
     * { -webkit-tap-highlight-color: transparent; }
     html, body {
       height:100%;
       margin:0;
-      background:#070912;
+      background:var(--bg2);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       -webkit-touch-callout:none;
       -webkit-user-select:none;
       user-select:none;
       overflow-x:hidden;
+      color: var(--text);
     }
 
+    /* -------- Cosmic background -------- */
     .bg{
       position:fixed; inset:0;
       background:
-        radial-gradient(1000px 700px at 20% 20%, rgba(120,120,255,0.16), transparent 60%),
-        radial-gradient(1000px 700px at 80% 10%, rgba(78,163,255,0.16), transparent 55%),
-        radial-gradient(900px 700px at 70% 80%, rgba(120,255,190,0.10), transparent 60%),
-        linear-gradient(180deg, #070912 0%, #06070e 60%, #05060b 100%);
+        radial-gradient(1200px 800px at 50% 50%, rgba(94,200,255,0.14), transparent 60%),
+        radial-gradient(900px 900px at 30% 30%, rgba(42,63,102,0.45), transparent 70%),
+        radial-gradient(900px 900px at 80% 10%, rgba(94,200,255,0.10), transparent 60%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
       filter:saturate(1.08);
+    }
+    .stars{
+      pointer-events:none;
+      position:fixed; inset:0;
+      background:
+        radial-gradient(1px 1px at 12% 24%, rgba(255,255,255,0.75), transparent 2px),
+        radial-gradient(1px 1px at 28% 10%, rgba(120,200,255,0.65), transparent 2px),
+        radial-gradient(1px 1px at 70% 18%, rgba(255,255,255,0.65), transparent 2px),
+        radial-gradient(1px 1px at 82% 35%, rgba(255,255,255,0.55), transparent 2px),
+        radial-gradient(1px 1px at 15% 70%, rgba(255,255,255,0.55), transparent 2px),
+        radial-gradient(1px 1px at 55% 78%, rgba(255,255,255,0.50), transparent 2px),
+        radial-gradient(1px 1px at 90% 82%, rgba(120,200,255,0.55), transparent 2px),
+        radial-gradient(2px 2px at 38% 46%, rgba(255,255,255,0.40), transparent 3px),
+        radial-gradient(2px 2px at 68% 62%, rgba(255,255,255,0.35), transparent 3px);
+      opacity:0.65;
+      mix-blend-mode: screen;
+      filter: blur(0.2px);
+      animation: starDrift 18s linear infinite;
+    }
+    @keyframes starDrift{
+      from{ transform: translateY(0); }
+      to{ transform: translateY(14px); }
     }
     .grain{
       pointer-events:none;
@@ -33,45 +75,122 @@
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
       opacity:.04; mix-blend-mode:overlay;
     }
+
     .wrap{ position:relative; min-height:100%; display:flex; align-items:center; justify-content:center; padding:18px; }
 
     .card{
       width:min(880px,96vw);
       border-radius:22px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.04);
+      border:1px solid var(--stroke);
+      background: var(--glass);
       box-shadow:0 22px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       padding:16px;
     }
 
-    /* ---- Shared UI ---- */
-    .orbWrap{ position:relative; width:180px; height:180px; display:flex; align-items:center; justify-content:center; }
+    /* ---- Shared radar orb ---- */
+    .orbWrap{ position:relative; width:200px; height:200px; display:flex; align-items:center; justify-content:center; }
     .ring{
-      position:absolute; inset:-14px; border-radius:999px;
-      border:1px solid rgba(255,255,255,0.07);
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05), transparent 60%);
+      position:absolute; inset:-18px; border-radius:999px;
+      border:1px solid rgba(94,200,255,0.24);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(94,200,255,0.07), transparent 60%);
+      animation: slowSpin 28s linear infinite;
       pointer-events:none;
     }
-    .orb{
-      width:170px; height:170px; border-radius:999px;
-      display:flex; align-items:center; justify-content:center;
-      font-weight:950; letter-spacing:0.12em;
-      border:1px solid rgba(78,163,255,0.45);
-      background: radial-gradient(circle at 30% 30%, rgba(78,163,255,0.35), rgba(78,163,255,0.10) 40%, rgba(255,255,255,0.02));
-      box-shadow:0 25px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
-      transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease;
-      -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
-      pointer-events:auto;
-      touch-action:none;
+    .ring2{
+      position:absolute; inset:-44px; border-radius:999px;
+      border:1px solid rgba(94,200,255,0.12);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(42,63,102,0.20), transparent 65%);
+      animation: slowSpin 46s linear infinite reverse;
+      pointer-events:none;
+      opacity:0.9;
     }
+    @keyframes slowSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+
+    .orb{
+      width:176px; height:176px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:950; letter-spacing:0.14em;
+      border:1px solid rgba(94,200,255,0.60);
+      color: rgba(255,255,255,0.95);
+
+      background:
+        radial-gradient(circle at 30% 30%, rgba(94,200,255,0.35), rgba(10,20,40,0.92) 56%),
+        repeating-conic-gradient(from 0deg,
+          rgba(120,160,200,0.22) 0deg 2deg,
+          transparent 2deg 30deg
+        );
+      box-shadow:0 25px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
+      transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease, border-color 130ms ease;
+      touch-action:none;
+      cursor:pointer;
+      position:relative;
+      overflow:hidden;
+    }
+    /* subtle crosshair */
+    .orb::before{
+      content:"";
+      position:absolute; inset:18%;
+      background:
+        linear-gradient(90deg, transparent 49%, rgba(120,160,200,0.20) 50%, transparent 51%),
+        linear-gradient(0deg,  transparent 49%, rgba(120,160,200,0.18) 50%, transparent 51%);
+      opacity:0.9;
+      pointer-events:none;
+      mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,1), rgba(0,0,0,0) 72%);
+    }
+
     .orb.holding{
       transform:scale(1.06);
-      background: radial-gradient(circle at 30% 30%, rgba(78,163,255,0.50), rgba(78,163,255,0.18) 45%, rgba(255,255,255,0.03));
-      box-shadow:0 30px 90px rgba(0,0,0,0.62), 0 0 0 22px rgba(78,163,255,0.09);
+      border-color: rgba(94,200,255,0.80);
+      box-shadow:0 30px 90px rgba(0,0,0,0.62), 0 0 0 22px rgba(94,200,255,0.10);
     }
-    .hint{ position:absolute; bottom:14px; font-size:12px; opacity:.6; pointer-events:none; }
+
+    /* success/fail glow classes (added by JS) */
+    .orb.success{
+      box-shadow:
+        0 30px 90px rgba(0,0,0,0.62),
+        0 0 0 18px rgba(125,255,209,0.18),
+        0 0 44px rgba(125,255,209,0.28);
+      border-color: rgba(125,255,209,0.75);
+    }
+    .orb.fail{
+      box-shadow:
+        0 30px 90px rgba(0,0,0,0.62),
+        0 0 0 18px rgba(255,125,139,0.16),
+        0 0 44px rgba(255,125,139,0.22);
+      border-color: rgba(255,125,139,0.70);
+    }
+
+    /* pulse wave (triggered by JS by toggling .pulseRun) */
+    .pulse{
+      position:absolute;
+      width:176px; height:176px;
+      border-radius:999px;
+      pointer-events:none;
+      opacity:0;
+      transform: scale(1);
+    }
+    .pulseRun{
+      animation: pulseOut 460ms ease-out forwards;
+    }
+    .pulse.ok{
+      border:2px solid rgba(125,255,209,0.45);
+      box-shadow: 0 0 40px rgba(125,255,209,0.18);
+    }
+    .pulse.bad{
+      border:2px solid rgba(255,125,139,0.42);
+      box-shadow: 0 0 40px rgba(255,125,139,0.16);
+    }
+    @keyframes pulseOut{
+      0%{ opacity:0.0; transform: scale(0.92); }
+      20%{ opacity:0.9; }
+      100%{ opacity:0; transform: scale(1.35); }
+    }
+
+    .hint{ position:absolute; bottom:14px; font-size:12px; opacity:.62; pointer-events:none; }
 
     .toast{
       position:absolute; inset:0;
@@ -83,8 +202,8 @@
       text-shadow:0 16px 60px rgba(0,0,0,0.70);
     }
     .toast.show{ opacity:1; transform:translateY(0); }
-    .good{ color: rgba(120,255,190,0.95); }
-    .bad{ color: rgba(255,120,140,0.95); }
+    .good{ color: rgba(125,255,209,0.96); }
+    .bad{ color: rgba(255,125,139,0.96); }
 
     /* ---- Gate overlay ---- */
     #gateScreen{
@@ -95,9 +214,9 @@
       justify-content:center;
       padding:18px;
 
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(0,0,0,0.40);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       touch-action:none;
 
       opacity:1;
@@ -107,9 +226,9 @@
     #gateCard{
       width:min(560px, 96vw);
       border-radius:22px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.05);
-      box-shadow:0 22px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
+      border:1px solid rgba(94,200,255,0.22);
+      background: rgba(255,255,255,0.04);
+      box-shadow:0 22px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02) inset;
       padding:16px;
 
       transform:scale(1);
@@ -117,15 +236,17 @@
       opacity:1;
     }
     #gateScreen.gone #gateCard{ transform:scale(0.985); opacity:0; }
-    .gateTitle{ font-size:12px; opacity:.65; letter-spacing:.18em; text-transform:uppercase; }
-    .gateGoal{ margin-top:10px; font-size:34px; font-weight:950; line-height:1.12; }
-    .gateSub{ margin-top:8px; font-size:13px; opacity:.72; }
+    .gateTitle{ font-size:12px; opacity:.70; letter-spacing:.18em; text-transform:uppercase; }
+    .gateGoal{ margin-top:10px; font-size:36px; font-weight:950; line-height:1.08; }
+    .gateSub{ margin-top:10px; font-size:13px; opacity:.76; }
     .gateArena{
       margin-top:14px;
-      height:300px;
+      height:320px;
       border-radius:20px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: radial-gradient(800px 320px at 50% 0%, rgba(78,163,255,0.14), rgba(255,255,255,0.01));
+      border:1px solid rgba(94,200,255,0.16);
+      background:
+        radial-gradient(900px 420px at 50% 10%, rgba(94,200,255,0.10), rgba(255,255,255,0.01)),
+        radial-gradient(600px 420px at 50% 120%, rgba(42,63,102,0.20), transparent 65%);
       display:flex; align-items:center; justify-content:center;
       position:relative; overflow:hidden;
       touch-action:none;
@@ -148,13 +269,14 @@
     .brandRow{ display:flex; align-items:center; gap:10px; }
     .logo{
       width:34px; height:34px; border-radius:12px;
-      border:1px solid rgba(255,255,255,0.10);
-      background: radial-gradient(18px 18px at 30% 30%, rgba(78,163,255,0.35), rgba(255,255,255,0.02));
+      border:1px solid rgba(94,200,255,0.22);
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(94,200,255,0.30), rgba(255,255,255,0.02));
       box-shadow:0 10px 30px rgba(0,0,0,0.35);
       display:flex; align-items:center; justify-content:center;
     }
-    .headline{ font-size:22px; font-weight:950; letter-spacing:0.01em; line-height:1.15; }
-    .mini{ font-size:12px; opacity:.62; line-height:1.35; }
+    .headline{ font-size:24px; font-weight:950; letter-spacing:0.01em; line-height:1.15; }
+    .mini{ font-size:12px; opacity:.68; line-height:1.35; }
 
     .controls{ display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
     .chipRow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
@@ -162,20 +284,20 @@
       appearance:none;
       border-radius:999px;
       padding:9px 12px;
-      border:1px solid rgba(255,255,255,0.10);
+      border:1px solid rgba(94,200,255,0.14);
       background: rgba(255,255,255,0.03);
       color: rgba(255,255,255,0.92);
       font-weight:900;
       font-size:12px;
       cursor:pointer;
-      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
     .chip:hover{ transform:translateY(-1px); }
     .chip:active{ transform:translateY(0) scale(0.99); }
     .chip.active{
-      border-color: rgba(78,163,255,0.38);
-      background: rgba(78,163,255,0.14);
-      box-shadow:0 10px 30px rgba(78,163,255,0.08);
+      border-color: rgba(94,200,255,0.40);
+      background: rgba(94,200,255,0.12);
+      box-shadow:0 10px 30px rgba(94,200,255,0.08);
     }
 
     .stats{ margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -183,23 +305,23 @@
       display:inline-flex; align-items:center; gap:8px;
       font-size:12px; padding:8px 10px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,0.10);
+      border:1px solid rgba(94,200,255,0.12);
       background: rgba(255,255,255,0.03);
-      white-space:nowrap; opacity:.94;
+      white-space:nowrap; opacity:.96;
     }
     .pill b{ font-weight:950; }
     .dot{ width:6px; height:6px; border-radius:999px; background: rgba(255,255,255,0.35); }
-    .dot.green{ background: rgba(120,255,190,0.75); }
-    .dot.blue{ background: rgba(78,163,255,0.75); }
-    .dot.red{ background: rgba(255,120,140,0.80); }
+    .dot.green{ background: rgba(125,255,209,0.75); }
+    .dot.blue{ background: rgba(94,200,255,0.75); }
+    .dot.red{ background: rgba(255,125,139,0.80); }
 
     .arena{
-      margin-top:14px; height:360px;
+      margin-top:14px; height:380px;
       border-radius:20px;
-      border:1px solid rgba(255,255,255,0.08);
+      border:1px solid rgba(94,200,255,0.14);
       background:
-        radial-gradient(900px 380px at 50% 0%, rgba(78,163,255,0.14), rgba(255,255,255,0.01)),
-        radial-gradient(700px 420px at 50% 120%, rgba(120,255,190,0.08), transparent 65%);
+        radial-gradient(900px 420px at 50% 0%, rgba(94,200,255,0.10), rgba(255,255,255,0.01)),
+        radial-gradient(700px 460px at 50% 120%, rgba(42,63,102,0.22), transparent 65%);
       display:flex; align-items:center; justify-content:center;
       position:relative; overflow:hidden;
       touch-action:none;
@@ -210,40 +332,41 @@
       .controls{ align-items:flex-start; }
       .chipRow{ justify-content:flex-start; }
       .bottom{ grid-template-columns:1fr; }
-      .arena{ height:330px; }
+      .arena{ height:340px; }
     }
+
     .panel{
       border-radius:18px;
-      border:1px solid rgba(255,255,255,0.08);
+      border:1px solid rgba(94,200,255,0.12);
       background: rgba(255,255,255,0.025);
       padding:12px;
       box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset;
     }
-    .panel h3{ margin:0 0 8px 0; font-size:12px; opacity:.65; letter-spacing:.12em; text-transform:uppercase; }
+    .panel h3{ margin:0 0 8px 0; font-size:12px; opacity:.70; letter-spacing:.12em; text-transform:uppercase; }
     .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
     .metric{ display:flex; flex-direction:column; gap:4px; min-width:120px; }
-    .metric .k{ font-size:11px; opacity:.55; letter-spacing:.06em; text-transform:uppercase; }
+    .metric .k{ font-size:11px; opacity:.58; letter-spacing:.06em; text-transform:uppercase; }
     .metric .v{ font-size:18px; font-weight:950; }
 
     .btn{
       appearance:none; border-radius:14px;
       padding:10px 12px; font-weight:950; font-size:13px;
-      border:1px solid rgba(255,255,255,0.10);
+      border:1px solid rgba(94,200,255,0.14);
       background: rgba(255,255,255,0.04);
       color: rgba(255,255,255,0.92);
       cursor:pointer;
-      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
     }
     .btn:hover{ transform: translateY(-1px); }
     .btn:active{ transform: translateY(0) scale(0.99); }
     .btn.primary{
-      border-color: rgba(78,163,255,0.38);
-      background: rgba(78,163,255,0.14);
-      box-shadow: 0 12px 40px rgba(78,163,255,0.08);
+      border-color: rgba(94,200,255,0.40);
+      background: rgba(94,200,255,0.12);
+      box-shadow: 0 12px 40px rgba(94,200,255,0.08);
     }
     .btn:disabled{ opacity:.45; cursor:not-allowed; }
 
-    .lbItem{ display:flex; justify-content:space-between; gap:10px; font-size:13px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .lbItem{ display:flex; justify-content:space-between; gap:10px; font-size:13px; padding:8px 0; border-bottom:1px solid rgba(94,200,255,0.10); }
     .lbItem:last-child{ border-bottom:none; }
 
     .confetti{
@@ -252,31 +375,37 @@
       animation: fall 720ms ease-out forwards;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
     }
-    @keyframes fall{ to{ transform: translateY(380px) rotate(220deg); opacity:0; } }
+    @keyframes fall{ to{ transform: translateY(420px) rotate(220deg); opacity:0; } }
 
     input[type="range"]{ width:100%; }
 
-    .footer{ margin-top:10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:12px; opacity:.5; }
+    .footer{ margin-top:10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:12px; opacity:.55; }
   </style>
 </head>
 
 <body tabindex="0">
   <div class="bg"></div>
+  <div class="stars"></div>
   <div class="grain"></div>
 
   <!-- GATE -->
   <div id="gateScreen">
     <div id="gateCard">
-      <div class="gateTitle">GİRİŞ TESTİ</div>
+      <div class="gateTitle">COSMIC GATE</div>
       <div class="gateGoal" id="gateGoal">Hedef: 1.20s</div>
       <div class="gateSub" id="gateMsg">Basılı tut → hedefte bırak. (Space)</div>
 
       <div class="gateArena" id="gateArena">
         <div class="toast" id="gateToast">OK</div>
+
         <div class="orbWrap">
+          <div class="ring2" aria-hidden="true"></div>
           <div class="ring" aria-hidden="true"></div>
+
+          <div class="pulse ok" id="gatePulse"></div>
           <div class="orb" id="gateOrb" aria-label="Hold">HOLD</div>
         </div>
+
         <div class="hint">Basılı tut / bırak • Space</div>
       </div>
     </div>
@@ -330,10 +459,15 @@
 
       <div class="arena" id="arena">
         <div class="toast" id="toast">PERFECT</div>
+
         <div class="orbWrap">
+          <div class="ring2" aria-hidden="true"></div>
           <div class="ring" aria-hidden="true"></div>
+
+          <div class="pulse ok" id="pulse"></div>
           <div class="orb" id="orb" aria-label="Hold">HOLD</div>
         </div>
+
         <div class="hint">Basılı tut / bırak (Space da olur)</div>
       </div>
 
@@ -375,7 +509,7 @@
 
       <div class="footer">
         <div>Daily: 5 hak • Practice: sınırsız</div>
-        <div>v1.3 + Gate</div>
+        <div>v1.3 • Cosmic Focus</div>
       </div>
     </div>
   </div>
@@ -396,32 +530,24 @@
   window.addEventListener("click", forceFocus, {passive:true});
   forceFocus();
 
-  // ---------- TTS (komik replikler) ----------
-  const WIN_LINES = ["İşte bu!", "Çok temiz!", "Tam ayarında!", "Bayağı iyiydi!", "Aynen böyle!"];
-  const PERFECT_LINES = ["Efsane!", "Bu ne netlik!", "Usta işi!", "Makine gibi!", "Ders niteliğinde!"];
-  const LOSE_LINES = ["Ah be!", "Bir tık kaçtı!", "Olmadı bu!", "Neredeyseydi!", "Göz kararı zor iş!"];
-  const GATE_FAIL_LINES = ["Isınma turu!", "Daha iyisini yaparsın!", "Bir daha dene!", "Bu sefer olmadı!", "Hadi toparla!"];
-
+  // ---------- TTS (tam Türkçe, küfürsüz + sert komik karışık) ----------
+  const WIN_LINES = [
+    "İşte bu!", "Çok temiz!", "Tam ayarında!", "Bayağı iyi!", "Aynen böyle!",
+    "Güzel yakaladın!", "Bu sefer tam oturdu!"
+  ];
+  const PERFECT_LINES = [
+    "Efsane!", "Bu ne netlik!", "Usta işi!", "Makine gibi!", "Ders niteliğinde!",
+    "Şaka gibi iyi!", "Nokta atışı!"
+  ];
+  const LOSE_LINES = [
+    "Ah be!", "Bir tık kaçtı!", "Olmadı bu!", "Neredeyseydi!", "Göz kararı zor iş!",
+    "Sabır değil, ayar istiyor!", "Bu kadar uzatmasak mı?"
+  ];
+  const GATE_FAIL_LINES = [
+    "Isınma turu!", "Daha iyisini yaparsın!", "Bir daha dene!", "Bu sefer olmadı!",
+    "Hadi toparla!", "Yakındı ama değil!"
+  ];
   function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-  function speakTR(text){
-    if (!soundOn) return; // Ses: Kapalı ise TTS de kapalı
-    if (!("speechSynthesis" in window)) return;
-    try{
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "tr-TR";
-      u.rate = 1.05;
-      u.pitch = 1.05;
-      u.volume = 1.0;
-      const voices = window.speechSynthesis.getVoices?.() || [];
-      const tr = voices.find(v => (v.lang || "").toLowerCase().startsWith("tr"));
-      if (tr) u.voice = tr;
-      window.speechSynthesis.speak(u);
-    }catch{}
-  }
-  window.speechSynthesis?.getVoices?.();
-  window.addEventListener("pointerdown", ()=>window.speechSynthesis?.getVoices?.(), {once:true});
 
   // ---------- Helpers ----------
   function todayKey(){
@@ -467,8 +593,8 @@
   };
 
   // Gate: 0.30–3.00s + yüksek tolerans
-  const GATE_TOL_MS = 260;
-  const GATE_PERF_MS = 110;
+  const GATE_TOL_MS = 300;      // yüksek
+  const GATE_PERF_MS = 140;     // yüksek
 
   // ---------- Storage ----------
   const LS="timefeel_v13:";
@@ -501,8 +627,143 @@
   let inGate = true;
 
   // ---------- Sound (beep) ----------
+  // ---------- Sound (MP3 random win / lose) ----------
+  const WIN_SFX = [
+    "win1.mp3",
+    "win2.mp3",
+    "win3.mp3",
+    "win4.mp3",
+    "win5.mp3"
+  ];
+
+  const LOSE_SFX = [
+    "lose1.mp3",
+    "lose2.mp3",
+    "lose3.mp3",
+    "lose4.mp3",
+    "lose5.mp3"
+  ];
+
+  const SFX_POOL_SIZE = 6;
+  const sfxPool = { win: [], lose: [] };
+  const sfxIdx  = { win: 0, lose: 0 };
+
+    // --- No-repeat shuffle bag (aynı mp3 üst üste gelmez) ---
+  function shuffleInPlace(arr){
+    for (let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  const bag = { win: [], lose: [] };
+  const lastPick = { win: null, lose: null };
+
+  function nextFromBag(type){
+    const src = (type==="win") ? WIN_SFX : LOSE_SFX;
+
+    // torba boşsa yeniden doldurup karıştır
+    if (!bag[type].length){
+      bag[type] = shuffleInPlace(src.slice());
+      // ilk seçim son çalanla aynı olmasın
+      if (bag[type].length > 1 && bag[type][0] === lastPick[type]){
+        [bag[type][0], bag[type][1]] = [bag[type][1], bag[type][0]];
+      }
+    }
+
+    const pick = bag[type].shift();
+    lastPick[type] = pick;
+    return pick;
+  }
+
+  // tek dosya için küçük pool: aynı dosya üst üste hızlı çalınırsa kesilmesin
+  const perFilePool = new Map(); // file -> { list: Audio[], idx:number }
+  const PER_FILE_POOL_SIZE = 3;
+
+  function playFile(file, vol){
+    if (!soundOn) return;
+
+    let slot = perFilePool.get(file);
+    if (!slot){
+      const list = [];
+      for (let i=0;i<PER_FILE_POOL_SIZE;i++){
+        const a = new Audio(file);
+        a.preload = "auto";
+        a.volume = vol;
+        list.push(a);
+      }
+      slot = { list, idx: 0 };
+      perFilePool.set(file, slot);
+    }
+
+    const a = slot.list[slot.idx % slot.list.length];
+    slot.idx++;
+
+    try{
+      a.pause();
+      a.currentTime = 0;
+      a.play().catch(()=>{});
+    }catch{}
+  }
+
+  function primeSfx(){
+    if (!soundOn) return;
+    // preload gibi davransın diye tüm dosyaların ilk Audio'larını yarat
+    for (const f of [...WIN_SFX, ...LOSE_SFX]){
+      if (!perFilePool.has(f)){
+        const a = new Audio(f);
+        a.preload = "auto";
+        a.volume = 0.85;
+        perFilePool.set(f, { list:[a], idx:0 });
+      }
+    }
+  }
+
+  function playRandomWin(){
+    const file = nextFromBag("win");
+    playFile(file, 0.85);
+  }
+
+  function playRandomLose(){
+    const file = nextFromBag("lose");
+    playFile(file, 0.90);
+  }
+
+
+  window.addEventListener("pointerdown", primeSfx, { once:true });
+  window.addEventListener("keydown", (e)=>{ if (e.code==="Space") primeSfx(); }, { once:true });
+
   let soundOn = load("sound_on", true);
   let audioCtx=null;
+
+  // ---------- Lose SFX (mp3) ----------
+  // Not: mp3 dosyası index.html ile aynı klasörde olmalı.
+  let loseSfx = null;
+
+  function ensureLoseSfx(){
+    if (!soundOn) return null;
+    if (!loseSfx){
+      loseSfx = new Audio("lose4.mp3");
+      loseSfx.preload = "auto";
+      loseSfx.volume = 0.85; // istersen 0.4–1.0 arası değiştir
+    }
+    return loseSfx;
+  }
+
+  function playLoseSfx(){
+    if (!soundOn) return;
+    const a = ensureLoseSfx();
+    if (!a) return;
+
+    try{
+      // Aynı sesi hızlı tekrar çalabilmek için reset
+      a.pause();
+      a.currentTime = 0;
+      a.play().catch(()=>{});
+    }catch{}
+  }
+
 
   function ensureAudio(){
     if (!soundOn) return null;
@@ -524,13 +785,16 @@
     osc.connect(g); g.connect(ctx.destination);
     osc.start(t0); osc.stop(t0+dur+0.02);
   }
-  const sPress=()=>tone(180,0.07,"sine",0.05);
-  const sNice=()=>{ tone(520,0.08,"triangle",0.06); setTimeout(()=>tone(760,0.09,"triangle",0.035),20); };
-  const sPerfect=()=>{ tone(620,0.08,"triangle",0.06); setTimeout(()=>tone(880,0.10,"triangle",0.05),60); };
-  const sFail=()=>{ tone(140,0.10,"sawtooth",0.045); setTimeout(()=>tone(110,0.10,"sawtooth",0.035),70); };
-  const sSwitch=()=>tone(320,0.05,"sine",0.04);
+  const sPress   = ()=>{};                 // basma sesi yok
+const sSwitch  = ()=>{};                 // switch sesi yok
+const sNice    = ()=> playRandomWin();   // kazanma
+const sPerfect = ()=> playRandomWin();   // perfect = win havuzu
+const sFail    = ()=> playRandomLose();  // kaybetme
 
-  // ---------- DOM ----------
+
+    function speakTR(){ /* TTS disabled */ }
+
+    // ---------- DOM ----------
   const $=(id)=>document.getElementById(id);
 
   const gateScreen=$("gateScreen");
@@ -539,7 +803,7 @@
   const gateArena=$("gateArena");
   const gateOrb=$("gateOrb");
   const gateToast=$("gateToast");
-  const gateCard=$("gateCard");
+  const gatePulse=$("gatePulse");
 
   const mainApp=$("mainApp");
 
@@ -564,6 +828,7 @@
   const arena=$("arena");
   const orb=$("orb");
   const toast=$("toast");
+  const pulse=$("pulse");
 
   const lastYou=$("lastYou");
   const lastGoal=$("lastGoal");
@@ -586,11 +851,24 @@
   function showToast(el, text, good){
     el.textContent=text;
     el.className="toast show "+(good?"good":"bad");
-    setTimeout(()=> el.className="toast", 520);
+    setTimeout(()=> el.className="toast", 540);
   }
   function setHolding(el,on){
     el.classList.toggle("holding", on);
     el.textContent = on ? "…" : "HOLD";
+  }
+  function flashOrb(el, ok){
+    el.classList.remove("success","fail");
+    el.classList.add(ok ? "success" : "fail");
+    setTimeout(()=> el.classList.remove("success","fail"), 260);
+  }
+  function runPulse(pulseEl, ok){
+    pulseEl.classList.remove("pulseRun","ok","bad");
+    pulseEl.classList.add(ok ? "ok":"bad");
+    // restart animation reliably
+    void pulseEl.offsetWidth;
+    pulseEl.classList.add("pulseRun");
+    setTimeout(()=> pulseEl.classList.remove("pulseRun"), 520);
   }
 
   function confettiBurst(count=14){
@@ -630,7 +908,6 @@
     ensureAudio();
     if (!inGate || gateHolding) return;
 
-    // pointer capture (mouse/touch stabil)
     try{
       if (e && e.pointerId != null && gateScreen.setPointerCapture) gateScreen.setPointerCapture(e.pointerId);
     }catch{}
@@ -650,21 +927,24 @@
     const diffMs    = elapsedMs - (gateTarget*1000);
     const abs       = Math.abs(diffMs);
 
-    // ✅ burada da süre yaz
     gateMsg.textContent = `Sen: ${(elapsedMs/1000).toFixed(2)}s • Fark: ${signedMs(diffMs)}`;
 
-    if (abs <= GATE_TOL_MS){
-      const txt = (abs <= GATE_PERF_MS) ? "PERFECT" : "OK";
-      showToast(gateToast, txt, true);
+    const ok = abs <= GATE_TOL_MS;
+    const perfect = abs <= GATE_PERF_MS;
+
+    runPulse(gatePulse, ok);
+    flashOrb(gateOrb, ok);
+
+    if (ok){
+      showToast(gateToast, perfect ? "PERFECT" : "OK", true);
       sPerfect();
-      speakTR(abs <= GATE_PERF_MS ? rand(PERFECT_LINES) : rand(WIN_LINES));
+      speakTR(perfect ? rand(PERFECT_LINES) : rand(WIN_LINES));
       setTimeout(passGate, 260);
     } else {
-      const txt = diffMs < 0 ? "EARLY" : "LATE";
-      showToast(gateToast, txt, false);
+      showToast(gateToast, diffMs < 0 ? "EARLY" : "LATE", false);
       sFail();
       speakTR(rand(GATE_FAIL_LINES));
-      setTimeout(newGateTarget, 520);
+      setTimeout(newGateTarget, 560);
     }
   }
 
@@ -711,7 +991,7 @@
       const row=document.createElement("div");
       row.className="lbItem";
       const left=document.createElement("div");
-      left.innerHTML=`<div style="font-weight:950;">${it.date}</div><div class="mini" style="opacity:.65;">Hedef: ${fmt2(it.goal)}s</div>`;
+      left.innerHTML=`<div style="font-weight:950;">${it.date}</div><div class="mini" style="opacity:.68;">Hedef: ${fmt2(it.goal)}s</div>`;
       const right=document.createElement("div");
       right.style.fontWeight="950";
       right.textContent=String(it.best||0);
@@ -805,12 +1085,17 @@
     const ok = abs <= tolMs;
     const perfect = abs <= tolMs * 0.35;
 
+    runPulse(pulse, ok);
+    flashOrb(orb, ok);
+
     if (ok){
       streak += 1;
       if (streak % 5 === 0) tolMs -= (diff==="hard"?10:diff==="easy"?7:8);
+
       lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
       showToast(toast, lastVerdict.textContent, true);
       msg.textContent="Başarılı!";
+
       if (perfect){
         confettiBurst(14);
         sPerfect();
@@ -828,6 +1113,7 @@
     } else {
       streak=0;
       tolMs += (diff==="hard"?10:diff==="easy"?7:8);
+
       lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
       showToast(toast, lastVerdict.textContent, false);
       sFail();
@@ -928,7 +1214,7 @@
   }
   // gate’te her yerden basılsın
   bindGatePointer(gateScreen);
-  bindGatePointer(gateCard);
+  bindGatePointer($("gateCard"));
   bindGatePointer(gateArena);
   bindGatePointer(gateOrb);
 
@@ -961,7 +1247,6 @@
 
   // ---------- Init ----------
   newGateTarget();
-  // Gate geçince main açılacak, ama state’i şimdiden çizelim
   render();
 })();
 </script>
