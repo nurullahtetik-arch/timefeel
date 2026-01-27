@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TimeFeel v1.3 (Gate + Anim + Input Fix)</title>
+  <title>TimeFeel v1.3</title>
   <style>
     :root { color-scheme: dark; }
     * { -webkit-tap-highlight-color: transparent; }
@@ -44,7 +44,6 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       padding:16px;
-      transform-origin: center;
     }
 
     /* ---- Shared UI ---- */
@@ -64,11 +63,8 @@
       box-shadow:0 25px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset;
       transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease;
       -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
-
-      /* ✅ önemli */
       pointer-events:auto;
       touch-action:none;
-      cursor:pointer;
     }
     .orb.holding{
       transform:scale(1.06);
@@ -102,15 +98,12 @@
       background: rgba(0,0,0,0.35);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-
       touch-action:none;
-      opacity: 1;
-      transition: opacity 220ms ease;
+
+      opacity:1;
+      transition: opacity 240ms ease;
     }
-    #gateScreen.gone{
-      opacity:0;
-      pointer-events:none;
-    }
+    #gateScreen.gone{ opacity:0; pointer-events:none; }
     #gateCard{
       width:min(560px, 96vw);
       border-radius:22px;
@@ -119,14 +112,11 @@
       box-shadow:0 22px 70px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset;
       padding:16px;
 
-      transform: scale(1);
-      transition: transform 220ms ease, opacity 220ms ease;
+      transform:scale(1);
+      transition: transform 240ms ease, opacity 240ms ease;
       opacity:1;
     }
-    #gateScreen.gone #gateCard{
-      transform: scale(0.98);
-      opacity:0;
-    }
+    #gateScreen.gone #gateCard{ transform:scale(0.985); opacity:0; }
     .gateTitle{ font-size:12px; opacity:.65; letter-spacing:.18em; text-transform:uppercase; }
     .gateGoal{ margin-top:10px; font-size:34px; font-weight:950; line-height:1.12; }
     .gateSub{ margin-top:8px; font-size:13px; opacity:.72; }
@@ -142,7 +132,7 @@
       pointer-events:auto;
     }
 
-    /* ---- Main app ---- */
+    /* ---- Main app (hidden until gate passes) ---- */
     #mainApp{
       display:none;
       opacity:0;
@@ -154,7 +144,6 @@
       transform: translateY(0) scale(1);
     }
 
-    /* ---- (senin ana oyun UI) ---- */
     .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     .brandRow{ display:flex; align-items:center; gap:10px; }
     .logo{
@@ -266,6 +255,7 @@
     @keyframes fall{ to{ transform: translateY(380px) rotate(220deg); opacity:0; } }
 
     input[type="range"]{ width:100%; }
+
     .footer{ margin-top:10px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:12px; opacity:.5; }
   </style>
 </head>
@@ -274,8 +264,8 @@
   <div class="bg"></div>
   <div class="grain"></div>
 
-  <!-- Gate overlay -->
-  <div id="gateScreen" aria-label="Gate">
+  <!-- GATE -->
+  <div id="gateScreen">
     <div id="gateCard">
       <div class="gateTitle">GİRİŞ TESTİ</div>
       <div class="gateGoal" id="gateGoal">Hedef: 1.20s</div>
@@ -292,8 +282,8 @@
     </div>
   </div>
 
+  <!-- MAIN -->
   <div class="wrap">
-    <!-- Main app -->
     <div class="card" id="mainApp">
       <div class="top">
         <div class="brandRow">
@@ -335,6 +325,7 @@
         <div class="pill" id="pillLives"><span class="dot red"></span> Hak <b id="lives">5</b></div>
         <div class="pill"><span class="dot green"></span> Streak <b id="streak">0</b></div>
         <div class="pill" id="pillBest"><span class="dot blue"></span> Best <b id="best">0</b></div>
+        <div class="pill"><span class="dot blue"></span> Tolerans <b id="tolLabel">± 150 ms</b></div>
       </div>
 
       <div class="arena" id="arena">
@@ -343,7 +334,7 @@
           <div class="ring" aria-hidden="true"></div>
           <div class="orb" id="orb" aria-label="Hold">HOLD</div>
         </div>
-        <div class="hint">Basılı tut / bırak</div>
+        <div class="hint">Basılı tut / bırak (Space da olur)</div>
       </div>
 
       <div class="bottom">
@@ -384,29 +375,53 @@
 
       <div class="footer">
         <div>Daily: 5 hak • Practice: sınırsız</div>
-        <div>v1.3</div>
+        <div>v1.3 + Gate</div>
       </div>
     </div>
   </div>
 
 <script>
 (() => {
-  // iOS Safari: long-press context menu + selection engelle
+  // iOS/Safari: long-press context menu + selection engelle
   window.addEventListener("contextmenu", (e)=>e.preventDefault(), {passive:false});
   document.addEventListener("selectstart", (e)=>e.preventDefault(), {passive:false});
   document.addEventListener("gesturestart", (e)=>e.preventDefault(), {passive:false});
 
-  // Focus fix: Space her zaman gelsin
+  // Focus fix: Space daha stabil gelsin
   function forceFocus(){
-    try{
-      document.body.focus({preventScroll:true});
-      window.focus();
-    }catch{}
+    try{ document.body.focus({preventScroll:true}); window.focus(); }catch{}
   }
   window.addEventListener("pointerdown", forceFocus, {passive:true});
   window.addEventListener("touchstart", forceFocus, {passive:true});
   window.addEventListener("click", forceFocus, {passive:true});
   forceFocus();
+
+  // ---------- TTS (komik replikler) ----------
+  const WIN_LINES = ["İşte bu!", "Çok temiz!", "Tam ayarında!", "Bayağı iyiydi!", "Aynen böyle!"];
+  const PERFECT_LINES = ["Efsane!", "Bu ne netlik!", "Usta işi!", "Makine gibi!", "Ders niteliğinde!"];
+  const LOSE_LINES = ["Ah be!", "Bir tık kaçtı!", "Olmadı bu!", "Neredeyseydi!", "Göz kararı zor iş!"];
+  const GATE_FAIL_LINES = ["Isınma turu!", "Daha iyisini yaparsın!", "Bir daha dene!", "Bu sefer olmadı!", "Hadi toparla!"];
+
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function speakTR(text){
+    if (!soundOn) return; // Ses: Kapalı ise TTS de kapalı
+    if (!("speechSynthesis" in window)) return;
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "tr-TR";
+      u.rate = 1.05;
+      u.pitch = 1.05;
+      u.volume = 1.0;
+      const voices = window.speechSynthesis.getVoices?.() || [];
+      const tr = voices.find(v => (v.lang || "").toLowerCase().startsWith("tr"));
+      if (tr) u.voice = tr;
+      window.speechSynthesis.speak(u);
+    }catch{}
+  }
+  window.speechSynthesis?.getVoices?.();
+  window.addEventListener("pointerdown", ()=>window.speechSynthesis?.getVoices?.(), {once:true});
 
   // ---------- Helpers ----------
   function todayKey(){
@@ -451,7 +466,7 @@
     hard: { start: 120, min: 70, max: 240 },
   };
 
-  // ✅ Gate tolerans yüksek
+  // Gate: 0.30–3.00s + yüksek tolerans
   const GATE_TOL_MS = 260;
   const GATE_PERF_MS = 110;
 
@@ -470,20 +485,25 @@
   let lives=LIVES_MAX;
   let streak=0;
   let tolMs=TOL[diff].start;
+
   let practiceTarget = clamp(Number(load("practice_target", 6.20)) || 6.20, 0, 20);
 
+  // Main hold
   let holding=false;
   let startMs=0;
 
+  // Gate hold
   let gateTarget=0;
   let gateHolding=false;
   let gateStartMs=0;
 
+  // Gate state
   let inGate = true;
 
-  // ---------- Sound ----------
+  // ---------- Sound (beep) ----------
   let soundOn = load("sound_on", true);
   let audioCtx=null;
+
   function ensureAudio(){
     if (!soundOn) return null;
     if (!audioCtx){
@@ -519,6 +539,7 @@
   const gateArena=$("gateArena");
   const gateOrb=$("gateOrb");
   const gateToast=$("gateToast");
+  const gateCard=$("gateCard");
 
   const mainApp=$("mainApp");
 
@@ -538,6 +559,7 @@
   const streakEl=$("streak");
   const pillBest=$("pillBest");
   const bestEl=$("best");
+  const tolLabel=$("tolLabel");
 
   const arena=$("arena");
   const orb=$("orb");
@@ -564,12 +586,13 @@
   function showToast(el, text, good){
     el.textContent=text;
     el.className="toast show "+(good?"good":"bad");
-    setTimeout(()=> el.className="toast", 420);
+    setTimeout(()=> el.className="toast", 520);
   }
   function setHolding(el,on){
     el.classList.toggle("holding", on);
     el.textContent = on ? "…" : "HOLD";
   }
+
   function confettiBurst(count=14){
     const rect=arena.getBoundingClientRect();
     for (let i=0;i<count;i++){
@@ -586,25 +609,19 @@
 
   // ---------- Gate ----------
   function newGateTarget(){
-    const raw = 0.3 + Math.random()*2.7;          // 0.30–3.00
+    const raw = 0.3 + Math.random()*2.7;
     const snap = Math.round(raw/0.05)*0.05;
     gateTarget = clamp(snap, 0.3, 3.0);
-    gateGoal.textContent=`Hedef: ${gateTarget.toFixed(2)}s`;
-    gateMsg.textContent="Basılı tut → hedefte bırak. (Space)";
+    gateGoal.textContent = `Hedef: ${gateTarget.toFixed(2)}s`;
+    gateMsg.textContent  = "Basılı tut → hedefte bırak. (Space)";
   }
 
   function passGate(){
     inGate=false;
-
-    // ✅ animasyon: gate fade-out, main fade-in
     gateScreen.classList.add("gone");
     mainApp.style.display="block";
-    // next frame -> show class (transition için)
     requestAnimationFrame(()=> mainApp.classList.add("show"));
-
-    // gate tamamen invisible (pointer kapalı zaten)
     setTimeout(()=>{ gateScreen.style.display="none"; }, 260);
-
     render();
     hardReset(false);
   }
@@ -613,7 +630,7 @@
     ensureAudio();
     if (!inGate || gateHolding) return;
 
-    // ✅ pointer capture: mouse/touch stabil
+    // pointer capture (mouse/touch stabil)
     try{
       if (e && e.pointerId != null && gateScreen.setPointerCapture) gateScreen.setPointerCapture(e.pointerId);
     }catch{}
@@ -629,19 +646,24 @@
     gateHolding=false;
     setHolding(gateOrb,false);
 
-    const elapsedMs=performance.now()-gateStartMs;
-    const diffMs=elapsedMs-(gateTarget*1000);
-    const abs=Math.abs(diffMs);
+    const elapsedMs = performance.now() - gateStartMs;
+    const diffMs    = elapsedMs - (gateTarget*1000);
+    const abs       = Math.abs(diffMs);
 
+    // ✅ burada da süre yaz
     gateMsg.textContent = `Sen: ${(elapsedMs/1000).toFixed(2)}s • Fark: ${signedMs(diffMs)}`;
 
     if (abs <= GATE_TOL_MS){
-      showToast(gateToast, abs<=GATE_PERF_MS ? "PERFECT" : "OK", true);
+      const txt = (abs <= GATE_PERF_MS) ? "PERFECT" : "OK";
+      showToast(gateToast, txt, true);
       sPerfect();
+      speakTR(abs <= GATE_PERF_MS ? rand(PERFECT_LINES) : rand(WIN_LINES));
       setTimeout(passGate, 260);
     } else {
-      showToast(gateToast, diffMs<0 ? "EARLY" : "LATE", false);
+      const txt = diffMs < 0 ? "EARLY" : "LATE";
+      showToast(gateToast, txt, false);
       sFail();
+      speakTR(rand(GATE_FAIL_LINES));
       setTimeout(newGateTarget, 520);
     }
   }
@@ -721,6 +743,7 @@
 
     livesEl.textContent=String(lives);
     streakEl.textContent=String(streak);
+    tolLabel.textContent = `± ${Math.round(tolMs)} ms`;
 
     if (mode==="daily"){
       bestEl.textContent=String(load(bestKey(diff),0));
@@ -752,6 +775,7 @@
       msg.textContent="Hakkın bitti. +2 hak al.";
       showToast(toast, "NO LIVES", false);
       sFail();
+      speakTR("Hakkın bitti!");
       return;
     }
 
@@ -787,7 +811,14 @@
       lastVerdict.textContent = perfect ? "PERFECT" : "NICE";
       showToast(toast, lastVerdict.textContent, true);
       msg.textContent="Başarılı!";
-      if (perfect){ confettiBurst(14); sPerfect(); } else sNice();
+      if (perfect){
+        confettiBurst(14);
+        sPerfect();
+        speakTR(rand(PERFECT_LINES));
+      } else {
+        sNice();
+        speakTR(rand(WIN_LINES));
+      }
 
       if (mode==="daily"){
         const k=bestKey(diff);
@@ -800,6 +831,7 @@
       lastVerdict.textContent = diffMs < 0 ? "EARLY" : "LATE";
       showToast(toast, lastVerdict.textContent, false);
       sFail();
+      speakTR(rand(LOSE_LINES));
 
       if (mode==="daily"){
         lives=Math.max(0, lives-1);
@@ -876,7 +908,7 @@
     lives=Math.min(LIVES_MAX, lives+2);
     msg.textContent="+2 hak aldın.";
     showToast(toast, "+2 LIFE", true);
-    sNice(); render();
+    sNice(); speakTR("Devam!"); render();
   });
 
   randBtn.addEventListener("click", ()=>{
@@ -886,8 +918,7 @@
   });
   slider.addEventListener("input", (e)=> setPracticeTarget(parseFloat(e.target.value)));
 
-  // ---------- Inputs routing (GARANTİLİ) ----------
-  // 1) Gate overlay’ın kendisi dahil: her yerden basılsın
+  // ---------- Inputs routing (Gate + Main) ----------
   function bindGatePointer(el){
     el.addEventListener("pointerdown", (e)=>{
       if (!inGate) return;
@@ -895,24 +926,24 @@
       gatePress(e);
     }, {passive:false});
   }
+  // gate’te her yerden basılsın
   bindGatePointer(gateScreen);
+  bindGatePointer(gateCard);
   bindGatePointer(gateArena);
   bindGatePointer(gateOrb);
 
-  // 2) Main arena
+  // main
   arena.addEventListener("pointerdown", (e)=>{
     if (inGate) return;
     e.preventDefault();
     onPress();
   }, {passive:false});
 
-  // 3) Release: her zaman window’da
   window.addEventListener("pointerup", ()=>{
     if (inGate) gateRelease();
     else onRelease();
   }, {passive:true});
 
-  // 4) Space: focus + route
   window.addEventListener("keydown", (e)=>{
     if (e.code!=="Space") return;
     e.preventDefault();
@@ -921,7 +952,6 @@
     if (inGate) gatePress(null);
     else onPress();
   });
-
   window.addEventListener("keyup", (e)=>{
     if (e.code!=="Space") return;
     e.preventDefault();
@@ -930,10 +960,9 @@
   });
 
   // ---------- Init ----------
-  function init(){
-    newGateTarget();
-  }
-  init();
+  newGateTarget();
+  // Gate geçince main açılacak, ama state’i şimdiden çizelim
+  render();
 })();
 </script>
 </body>
